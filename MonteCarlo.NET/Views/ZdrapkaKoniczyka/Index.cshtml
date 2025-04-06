@@ -1,0 +1,235 @@
+﻿  @model ZdrapkaKoniczynka
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zdrapka - Gra</title>
+    <style>
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white; 
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            transition: background-color 0.3s ease, transform 0.2s ease; 
+        }
+
+            .button:hover {
+                background-color: #45a049; 
+                transform: scale(1.1); 
+            }
+
+            .button:active {
+                background-color: #388e3c;
+                transform: scale(1); 
+            }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        #gameCanvas {
+            border: 1px solid #000;
+        }
+
+        #rewardCanvas {
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+
+        .message {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Zdrapka - Znajdź 3 razy słonika i wygraj przypisaną nagrodę!</h1>
+        <div style="display: flex; gap: 20px;">
+         
+            <canvas id="gameCanvas" width="300" height="300"></canvas>
+
+          
+            <canvas id="rewardCanvas" width="150" height="150"></canvas>
+        </div>
+        <div class="message"></div>
+        <div class="button-container">
+            <a href="/game2" class="button">Zdrapka slonik</a>
+
+          
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="error-message">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+        </div>
+    </div>
+
+    <script>
+             
+        const coverImage = new Image();
+        coverImage.src = '/images/kasa.jpg';
+
+        const cloverImage = new Image();
+        cloverImage.src = '/images/lot.jpg'; 
+
+        const emptyImage = new Image();
+        emptyImage.src = '/images/x.jpg'; 
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameData = @Html.Raw(Json.Serialize(Model.Fields)); 
+
+        const tileSize = 100;
+        const clover = '🍀'; 
+        const empty = '❌'; 
+        const tiles = []; 
+
+           function drawTile(tile) {
+            if (tile.revealed) {
+                
+                if (tile.type === 'clover') {
+                    ctx.drawImage(cloverImage, tile.x, tile.y, tile.width, tile.height);
+                } else {
+                    ctx.drawImage(emptyImage, tile.x, tile.y, tile.width, tile.height);
+                }
+            } else {
+               
+                ctx.drawImage(coverImage, tile.x, tile.y, tile.width, tile.height);
+            }
+        }
+
+        
+        function initializeBoard() {
+            tiles.length = 0; 
+            for (let i = 0; i < 9; i++) {
+                let row = Math.floor(i / 3);
+                let col = i % 3;
+                tiles.push({
+                    x: col * tileSize,
+                    y: row * tileSize,
+                    width: tileSize,
+                    height: tileSize,
+                    revealed: false,
+                    type: gameData[i] 
+                });
+                drawTile(tiles[i]);
+            }
+        }
+
+       
+    
+
+
+        let revealedCount = 0; 
+        const messageDiv = document.querySelector('.message'); 
+
+        
+        function scrape(e) {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            tiles.forEach(tile => {
+                if (!tile.revealed && x >= tile.x && x <= tile.x + tile.width && y >= tile.y && y <= tile.y + tile.height) {
+                    tile.revealed = true;
+                    revealedCount++;
+                    drawTile(tile);
+
+                    
+                    if (revealedCount === tiles.length) {
+                        checkGameResult();
+                    }
+                }
+            });
+        }
+
+       
+        function checkGameResult() {
+           
+            const cloversFound = tiles.filter(tile => tile.type === 'clover' && tile.revealed).length;
+
+            
+            if (cloversFound >= 3) {
+                messageDiv.innerHTML = '<p>Gratulacje! Wygrałeś! 🏆</p>';
+            } else {
+                messageDiv.innerHTML = '<p>Spróbuj ponownie!</p>';
+            }
+        }
+
+       
+        canvas.addEventListener('mousemove', function (e) {
+            if (e.buttons === 1) { 
+                scrape(e);
+            }
+        });
+                coverImage.onload = function () {
+            initializeBoard(); 
+        };
+                const rewardCanvas = document.getElementById('rewardCanvas');
+        const rewardCtx = rewardCanvas.getContext('2d');
+
+        
+        const reward = @Html.Raw(Json.Serialize(Model.Wygrana)); 
+
+        let rewardRevealed = false;
+
+        
+        function drawRewardTile(revealed) {
+            if (revealed) {
+                rewardCtx.clearRect(0, 0, rewardCanvas.width, rewardCanvas.height);
+                rewardCtx.fillStyle = "#FFF";
+                rewardCtx.fillRect(0, 0, rewardCanvas.width, rewardCanvas.height);
+                rewardCtx.fillStyle = "#000";
+                rewardCtx.font = "20px Arial";
+                rewardCtx.textAlign = "center";
+                rewardCtx.textBaseline = "middle";
+                rewardCtx.fillText(`${reward}zł`, rewardCanvas.width / 2, rewardCanvas.height / 2);
+            } else {
+                rewardCtx.fillStyle = "#ccc";
+                rewardCtx.fillRect(0, 0, rewardCanvas.width, rewardCanvas.height);
+                rewardCtx.fillStyle = "#000";
+                rewardCtx.font = "16px Arial";
+                rewardCtx.textAlign = "center";
+                rewardCtx.textBaseline = "middle";
+                rewardCtx.fillText("Nagroda!", rewardCanvas.width / 2, rewardCanvas.height / 2);
+            }
+        }
+
+        
+        rewardCanvas.addEventListener('mousemove', function (e) {
+            if (e.buttons === 1 && !rewardRevealed) {
+                rewardRevealed = true;
+                drawRewardTile(true);
+            }
+        });
+
+        
+        drawRewardTile(false);
+
+      
+        initializeBoard();
+    </script>
+
+</body>
+</html>

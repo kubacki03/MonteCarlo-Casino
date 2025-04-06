@@ -1,0 +1,46 @@
+﻿<div class="container">
+    <div class="row mb-3 justify-content-center">
+      
+        <div class="col-md-4 d-flex justify-content-center">
+            <div class="card bg-dark" style="width: 100%;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">50 zł</h5>
+                    <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
+                        <input type="hidden" name="kwota" value="50" />
+                        <button type="submit" class="btn btn-primary">Zaplac</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 d-flex justify-content-center">
+            <div class="card bg-dark text-center" style="width: 100%;">
+                <div class="card-body">
+                    <h5 class="card-title">100 zł</h5>
+                    <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
+                        <input type="hidden" name="kwota" value="100" />
+                        <button type="submit" class="btn btn-primary">Zaplac</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 d-flex justify-content-center">
+            <div class="card bg-dark text-center" style="width: 100%;">
+                <div class="card-body">
+                    <h5 class="card-title">1000 zł</h5>
+                    <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
+                        <input type="hidden" name="kwota" value="1000" />
+                        <button type="submit" class="btn btn-primary">Zaplac</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 justify-content-center">
+        <div class="col-12 d-flex justify-content-center">
+            <img src="~/images/gambleImage.png" alt="Obrazek" style="max-width: 100%; height: auto;" />
+        </div>
+    </div>
+</div>

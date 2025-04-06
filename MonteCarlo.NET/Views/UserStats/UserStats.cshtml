@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "User Stats";
+    var spentMoney = ViewBag.SpentMoney;
+    var wonMoney = ViewBag.WonMoney;
+    var favGame = ViewBag.FavGame;
+    var chartData = ViewBag.Data;
+}
+
+<h1>Statystyki użytkownika</h1>
+
+<div>
+    <p><strong>Suma wydanych pieniędzy:</strong> @spentMoney</p>
+    <p><strong>Suma wygranych pieniędzy:</strong> @wonMoney</p>
+    <p><strong>Ulubiona gra:</strong> @favGame</p>
+</div>
+
+<hr />
+
+<h2>Wykres: Liczba gier rozegranych w poszczególnych godzinach</h2>
+
+<canvas id="userStatsChart" width="800" height="400"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('userStatsChart').getContext('2d');
+
+        const chartData = JSON.parse('@Html.Raw(chartData)');
+        const labels = Object.keys(chartData).map(key => `Godzina ${key}`);
+        const data = Object.values(chartData);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Liczba gier rozegranych',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)', 
+                        },
+                        ticks: {
+                            color: 'white', 
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)', 
+                        },
+                        ticks: {
+                            color: 'white', 
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white' 
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>

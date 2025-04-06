@@ -1,0 +1,799 @@
+﻿@{
+    var numbers = RouletteNumber.GenerateRouletteNumbers();
+    var lastNumber = numbers.Last();
+    numbers.Remove(lastNumber);
+}
+
+<div id="mainflex">
+    <div class="bets-list">
+        <h3>Current Bets</h3>
+        <ul id="bets-list">
+            @for (int i = 0; i < RuletkaFunkcje.bets.Length; i++)
+            {
+                <li id="bet-@i">
+                    <span>@RuletkaFunkcje.betString[i]</span>
+                    <span class="bet-amount">@RuletkaFunkcje.bets[i].ToString("F2")</span>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="roulette-table">
+        <div>
+            <label for="betAmount">Bet Amount:</label>
+            <input type="number" id="betAmount" placeholder="Enter amount" />
+        </div>
+
+        <div class="grid-container">
+            <div class="special-cell">
+                <button class="cell @lastNumber.Color.ToLower()"
+                        onclick="placeBet(@lastNumber.Number)">
+                    <span>@lastNumber.Number</span>
+                </button>
+            </div>
+            <div class="grid">
+                @for (int i = 0; i < numbers.Count; i++)
+                {
+                    <button class="cell @numbers[i].Color.ToLower()"
+                            onclick="placeBet(@numbers[i].Number, @i)">
+                        <span>@numbers[i].Number</span>
+                    </button>
+                }
+            </div>
+            <div class="side-buttons">
+                <button class="betbut" onclick="placeBet(39)">Row 1</button>
+                <button class="betbut" onclick="placeBet(40)">Row 2</button>
+                <button class="betbut" onclick="placeBet(41)">Row 3</button>
+            </div>
+        </div>
+        <div class="bets">
+            <button id="b1" class="betbut" onclick="placeBet(37)">Czarne</button>
+            <button id="b2" class="betbut" onclick="placeBet(38)">Czerwone</button>
+            <button id="b3" class="betbut" onclick="placeBet(47)">Parzyste</button>
+            <button id="b4" class="betbut" onclick="placeBet(48)">Nieparzyste</button>
+            <button id="b5" class="betbut" onclick="placeBet(45)">1 do 18</button>
+            <button id="b6" class="betbut" onclick="placeBet(46)">19 do 36</button>
+            <button id="b7" class="betbut" onclick="placeBet(42)">1 do 12</button>
+            <button id="b8" class="betbut" onclick="placeBet(43)">13 do 24</button>
+            <button id="b9" class="betbut" onclick="placeBet(44)">25 do 36</button>
+            <button class="confb-button" onclick="spinToWin()">SPIN!</button>
+        </div>
+        <div class="resultbar">
+            <p></p>
+        </div>
+        <p class="wynik"></p>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="error-message">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="roulette">
+        <div class="wheel">
+            <div class="wheel-segment">
+                <div class="wheel-text">0</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">1</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">2</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">3</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">4</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">5</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">6</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">7</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">8</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">9</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">10</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">11</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">12</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">13</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">14</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">15</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">16</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">17</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">18</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">19</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">20</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">21</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">22</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">23</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">24</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">25</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">26</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">27</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">28</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">29</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">30</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">31</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">32</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">33</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">34</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">35</div>
+            </div>
+            <div class="wheel-segment">
+                <div class="wheel-text">36</div>
+            </div>
+
+            <div class="ball"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // Function to place a bet
+    function placeBet(position) {
+        const betAmount = document.getElementById("betAmount").value;
+
+        if (!betAmount || betAmount <= 0) {
+            alert("Please enter a valid betting amount.");
+            return;
+        }
+
+        fetch('/RController/PlaceBet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                money: parseFloat(betAmount),
+                position: parseInt(position),
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error placing bet.");
+            }
+            updateBets();
+        })
+        .catch(error => {
+            console.error("Error placing bet:", error);
+            alert("Error placing bet.");
+        });
+    }
+
+
+    function updateBets() {
+        fetch('/RController/GetBets')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch bets.');
+                }
+                return response.json();
+            })
+            .then(bets => {
+                bets.forEach((bet, index) => {
+                    const betElement = document.querySelector(`#bet-${index} .bet-amount`);
+                    if (betElement) {
+                        betElement.textContent = bet.toFixed(2);
+                        betElement.style.color = bet === 0 ? 'gray' : 'black';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching bets:", error);
+            });
+    }
+
+    function spinToWin() {
+        const ball = document.querySelector('.ball');
+        const wheel = document.querySelector('.wheel');
+        const resultBar = document.querySelector('.resultbar p');
+
+        fetch('/RController/GetResult', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) //MAYBE breaks if removed??
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch result.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const { win: isWinner, bets: allBets, coins: winnings, finalNumber } = data;
+
+            fetch('/RC/ZwrocWynikRuletka', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isWinner, allBets, winnings })
+            })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Błąd:', error));
+
+            resultBar.innerHTML = `Result: <b>${finalNumber}</b><br>Winnings: <b>${winnings.toFixed(0)}</b>`;
+            updateBets();
+        })
+        .catch(error => {
+            console.error("Error fetching result:", error);
+            alert("Error fetching result.");
+        });
+
+        ball.style.animation = 'spinBall 3s linear infinite';
+
+        wheel.style.animation = 'spinWheel 3s linear infinite';
+
+        setTimeout(() => {
+            ball.style.animation = 'none';
+            wheel.style.animation = 'none';
+        }, 5000);
+
+        updateBets();
+
+        setTimeout(() => {
+            console.log("Przekierowanie po 6 sekundach...");
+            window.location.href = "/Home/Ruletka";
+        }, 6000);
+    }
+
+    window.onload = function() {
+        updateBets(); // Run updateBets when the page loads
+    };
+</script>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #mainflex {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100vw;
+        margin-left: -5vw;
+    }
+
+    .resultbar {
+        width: 100%;
+    }
+
+        .resultbar p {
+            margin-right: -5vw;
+            font-size: 18px;
+            text-align: right;
+            margin-top: 10px;
+        }
+
+    .roulette-table {
+        margin: 0 0 0 2vw;
+        width: 50vw;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 75px auto 100px; /* Main grid on the left and buttons on the right */
+        gap: 20px;
+        align-items: start;
+        margin-top: 10px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 50px); /* 12 columns for numbers */
+        grid-gap: 5px;
+    }
+
+    .special-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        grid-row: span 3; /* Span the height of 3 rows */
+    }
+
+        .special-cell .cell {
+            width: 50px;
+            height: 150px; /* 3 rows of 50px each */
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid black;
+        }
+
+    .cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        border: 1px solid black;
+        height: 50px;
+    }
+
+        .cell.red {
+            background-color: red;
+            color: white;
+        }
+
+            .cell.red:hover {
+                background-color: darkred;
+            }
+
+        .cell.black {
+            background-color: black;
+            color: white;
+        }
+
+            .cell.black:hover {
+                background-color: darkslategray;
+            }
+
+        .cell.green {
+            background-color: green;
+            color: white;
+        }
+
+            .cell.green:hover {
+                background-color: darkgreen;
+            }
+
+        .cell:active {
+            color: #fcba03;
+            !important
+        }
+
+    .side-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+        .side-buttons button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+            .side-buttons button:hover {
+                background-color: #0056b3;
+            }
+
+    .bets {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .confb-button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #fcba03;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+        .confb-button:hover {
+            background-color: #ff7f0f;
+        }
+
+    .bets-list {
+        /*position: fixed; /* Fixed to stay visible on screen while scrolling */
+        /*left: 20px; /* Align to the left side of the screen */
+        /*top: 100px;*/
+        width: 200px;
+        max-height: 500px; /* Limit the height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        padding: 15px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        color: black;
+    }
+
+        .bets-list h3 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            text-align: center;
+            color: black;
+        }
+
+        .bets-list ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            color: black;
+        }
+
+        .bets-list li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: black;
+        }
+
+        .bets-list span {
+            font-weight: bold;
+        }
+
+    #b1 {
+        padding: 10px 20px;
+        border: none;
+        background-color: black;
+        cursor: pointer;
+    }
+
+        #b1:hover {
+            background-color: darkslategray;
+        }
+
+    #b2 {
+        padding: 10px 20px;
+        border: none;
+        background-color: red;
+        cursor: pointer;
+    }
+
+        #b2:hover {
+            background-color: darkred;
+        }
+
+    .betbut {
+        padding: 10px 20px;
+        margin-right: 5px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+        
+        .betbut:hover {
+            background-color: #0056b3;
+        }
+
+    .betbut:active {
+        color: #fcba03;
+        !important
+    }
+
+
+
+
+
+
+    /* RULETKA STYLE */
+
+    .wheel {
+        margin: auto;
+        width: 300px;
+        height: 300px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 50%;
+        transition: all 500ms;
+    }
+
+    .wheel-segment {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform-origin: 50% 50%;
+        clip-path: polygon(50% 50%, 100% 46%, 100% 54%);
+        text-align: center;
+    }
+
+        .wheel-segment:nth-child(1) {
+            background: green;
+            transform: rotate(0deg);
+        }
+
+        .wheel-segment:nth-child(2) {
+            background: red;
+            transform: rotate(9.72972972973deg);
+        }
+
+        .wheel-segment:nth-child(3) {
+            background: black;
+            transform: rotate(19.45945945946deg);
+        }
+
+        .wheel-segment:nth-child(4) {
+            background: red;
+            transform: rotate(29.18918918919deg);
+        }
+
+        .wheel-segment:nth-child(5) {
+            background: black;
+            transform: rotate(38.91891891892deg);
+        }
+
+        .wheel-segment:nth-child(6) {
+            background: red;
+            transform: rotate(48.64864864865deg);
+        }
+
+        .wheel-segment:nth-child(7) {
+            background: black;
+            transform: rotate(58.37837837838deg);
+        }
+
+        .wheel-segment:nth-child(8) {
+            background: red;
+            transform: rotate(68.10810810811deg);
+        }
+
+        .wheel-segment:nth-child(9) {
+            background: black;
+            transform: rotate(77.83783783784deg);
+        }
+
+        .wheel-segment:nth-child(10) {
+            background: red;
+            transform: rotate(87.56756756757deg);
+        }
+
+        .wheel-segment:nth-child(11) {
+            background: black;
+            transform: rotate(97.2972972973deg);
+        }
+
+        .wheel-segment:nth-child(12) {
+            background: black;
+            transform: rotate(107.02702702703deg);
+        }
+
+        .wheel-segment:nth-child(13) {
+            background: red;
+            transform: rotate(116.75675675676deg);
+        }
+
+        .wheel-segment:nth-child(14) {
+            background: black;
+            transform: rotate(126.48648648649deg);
+        }
+
+        .wheel-segment:nth-child(15) {
+            background: red;
+            transform: rotate(136.21621621622deg);
+        }
+
+        .wheel-segment:nth-child(16) {
+            background: black;
+            transform: rotate(145.94594594595deg);
+        }
+
+        .wheel-segment:nth-child(17) {
+            background: red;
+            transform: rotate(155.67567567568deg);
+        }
+
+        .wheel-segment:nth-child(18) {
+            background: black;
+            transform: rotate(165.40540540541deg);
+        }
+
+        .wheel-segment:nth-child(19) {
+            background: red;
+            transform: rotate(175.13513513514deg);
+        }
+
+        .wheel-segment:nth-child(20) {
+            background: red;
+            transform: rotate(184.86486486487deg);
+        }
+
+        .wheel-segment:nth-child(21) {
+            background: black;
+            transform: rotate(194.5945945946deg);
+        }
+
+        .wheel-segment:nth-child(22) {
+            background: red;
+            transform: rotate(204.32432432433deg);
+        }
+
+        .wheel-segment:nth-child(23) {
+            background: black;
+            transform: rotate(214.05405405406deg);
+        }
+
+        .wheel-segment:nth-child(24) {
+            background: red;
+            transform: rotate(223.78378378379deg);
+        }
+
+        .wheel-segment:nth-child(25) {
+            background: black;
+            transform: rotate(233.51351351352deg);
+        }
+
+        .wheel-segment:nth-child(26) {
+            background: red;
+            transform: rotate(243.24324324325deg);
+        }
+
+        .wheel-segment:nth-child(27) {
+            background: black;
+            transform: rotate(252.97297297298deg);
+        }
+
+        .wheel-segment:nth-child(28) {
+            background: red;
+            transform: rotate(262.70270270271deg);
+        }
+
+        .wheel-segment:nth-child(29) {
+            background: black;
+            transform: rotate(272.43243243244deg);
+        }
+
+        .wheel-segment:nth-child(30) {
+            background: red;
+            transform: rotate(282.16216216217deg);
+        }
+
+        .wheel-segment:nth-child(31) {
+            background: black;
+            transform: rotate(291.8918918919deg);
+        }
+
+        .wheel-segment:nth-child(32) {
+            background: red;
+            transform: rotate(301.62162162163deg);
+        }
+
+        .wheel-segment:nth-child(33) {
+            background: black;
+            transform: rotate(311.35135135136deg);
+        }
+
+        .wheel-segment:nth-child(34) {
+            background: red;
+            transform: rotate(321.08108108109deg);
+        }
+
+        .wheel-segment:nth-child(35) {
+            background: black;
+            transform: rotate(330.81081081082deg);
+        }
+
+        .wheel-segment:nth-child(36) {
+            background: red;
+            transform: rotate(340.54054054055deg);
+        }
+
+        .wheel-segment:nth-child(37) {
+            background: black;
+            transform: rotate(350.27027027028deg);
+        }
+
+    .ball {
+        position: absolute;
+        top: 49%;
+        left: 48.5%;
+        width: 10px;
+        height: 10px;
+        background: gold;
+        border-radius: 50%;
+        z-index: 30;
+        transform-origin: -150px center;
+    }
+
+    .wheel-text {
+        position: absolute;
+        top: 98%;
+        left: 100%;
+        transform: translate(-50%, -50%) rotate(-9.72972972973deg);
+        font-size: 0.5rem;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        white-space: nowrap;
+        width: 80%;
+        height: 100%;
+        z-index: 10; /* Ensure the text is above other elements */
+    }
+
+    .roulette {
+        position: relative;
+        margin: auto;
+        text-align: center;
+    }
+
+    @@keyframes spinWheel {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spinBall {
+        0% {
+            transform: rotate(0deg) translateX(120px) rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg) translateX(120px) rotate(-360deg);
+        }
+    }
+
+</style>

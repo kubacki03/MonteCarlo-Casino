@@ -1,0 +1,73 @@
+﻿@model List<KontoUzytkownika>
+<h1>Dane Użytkowników</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Uzytkownik">
+		<div class="form-group w-50">
+			<label for="opcjaSort">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOption != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOption
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSort" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaUzytkownika)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchText">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchText" class="form-control" autocomplete="off" />
+			</div>
+		
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+
+<table class="table text-white">
+	<thead>
+		<tr>
+			<th>Nazwa użytkownika</th>
+			<th>Nazwisko</th>
+			<th>Imie</th>
+			<th>Saldo</th>
+			<th>Level</th>
+			<th>Data końca bana</th>
+			<th>Akcja</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var uzytkownik in Model)
+		{
+			<tr>
+				<td>@uzytkownik.UserName</td>
+				<td>@uzytkownik.Nazwisko</td>
+				<td>@uzytkownik.Imie</td>
+				<td>@uzytkownik.Saldo</td>
+				<td>@uzytkownik.Level</td>
+				<td>@uzytkownik.LockoutEnd?.ToString("dd.MM.yyyy HH:mm:ss")</td>
+				<td>
+					<form asp-controller="Administrator" asp-action="FormularzPrzekazanieId" method="post">
+						<input type="hidden" id="poleUzytkownikId" name="uzytkownikId" value="@uzytkownik.Id" />
+
+						@if (uzytkownik.LockoutEnabled)
+						{
+							<button type="submit" class="btn btn-danger">Zbanuj</button>
+						}
+						else
+						{
+							<button type="submit" class="btn btn-success">Odbanuj</button>
+						}
+					</form>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

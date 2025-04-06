@@ -1,0 +1,57 @@
+﻿@model List<UzytkownikTransakcja>
+
+<h1>Historia transakcji</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Transakcje">
+		<div class="form-group w-50">
+			<label for="opcjaSort">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOptionTransakcja != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOptionTransakcja
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSortTransakcja" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaTransakcji)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchText">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchTextTransakcja" class="form-control" autocomplete="off" />
+			</div>
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+<table class="table text-white">
+<thead>
+	<tr>
+		<th>Nazwa użytkownika</th>
+		<th>Nazwisko</th>
+		<th>Imie</th>
+		<th>Data transakcji</th>
+		<th>Kwota</th>
+		<th>Typ transakcji</th>
+	</tr>
+</thead>
+<tbody>
+	@foreach (var transakacja in Model)
+	{
+		<tr>
+			<td>@transakacja.NazwaUzytkownika</td>
+			<td>@transakacja.Nazwisko</td>
+			<td>@transakacja.Imie</td>
+			<td>@transakacja.Data.ToString("dd.MM.yyyy")</td>
+			<td>@transakacja.Kwota</td>
+			<td>@transakacja.Typ</td>
+		</tr>
+	}
+</tbody>
+</table>

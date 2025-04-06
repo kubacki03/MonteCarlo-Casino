@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Wypłata zakończona sukcesem";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script>
+
+        setTimeout(function () {
+            window.location.href = '@Url.Action("Index", "Home")';
+        }, 3000);
+    </script>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 20px;">
+        <h1>Wypłata się powiodła</h1>
+        <p>Pieniądze trafią na konto w ciągu 3 dni roboczych</p>
+        <img src="~/images/javaout.png" alt="Sukces" style="max-width: 700px;">
+        <p>Za chwilę nastąpi przekierowanie do menu...</p>
+    </div>
+</body>
+</html>

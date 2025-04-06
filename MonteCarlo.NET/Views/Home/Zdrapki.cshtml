@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Zdrapka Games";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zdrapka Games</title>
+    <style>
+        .button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 25px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+            .button:hover {
+                background-color: #0056b3;
+            }
+
+        .error-message {
+            color: red;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Witaj w zdrapkach</h1>
+    <p>Wybierz zdrapke:</p>
+
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <a href="/game" class="button">Zdrapka prosta za @ViewData["Zdrapka Prosta"] zł</a>
+    <a href="/game2" class="button">Zdrapka slonik za  @ViewData["Zdrapka Koniczynka"]  zł</a>
+</body>
+</html>

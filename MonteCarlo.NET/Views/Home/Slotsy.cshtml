@@ -1,0 +1,40 @@
+﻿@model double
+<head>
+    <link rel="stylesheet" href="~/css/Slotsy.css" />
+    <script src="~/js/Slotsy.js" defer></script>
+</head>
+
+<div class="text-center">
+    <h1>Minimalna stawka: @Model</h1>
+</div>
+<div id="slotsy">
+    <div class="kolumny">
+        <div class="kolumna">
+            <div class="elementy">
+            </div>
+        </div>
+
+        <div class="kolumna">
+            <div class="elementy">
+            </div>
+        </div>
+
+        <div class="kolumna">
+            <div class="elementy">
+            </div>
+        </div>
+    </div>
+
+    <div class="przyciski">
+        <input id="stawka" type="number" placeholder="Stawka" required min="1" step="1" />
+        <button id="losuj" class="btn btn-success">Losuj</button>
+    </div>
+
+    <p class="wynik"></p>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+</div>

@@ -1,0 +1,28 @@
+﻿@model FormularzBan
+
+<div class="container">
+    <div class="row justify-content-center align-items-center">
+        
+        <div class="col-12 col-md-6">
+            <h1>Dodawanie Banów</h1>
+            <form asp-controller="Administrator" asp-action="FormularzBan" method="post" novalidate>
+                <div class="form-group">
+                    <label for="Data">Data początkowa</label>
+                    <input type="date" asp-for="Data" class="form-control" />
+                    <span asp-validation-for="Data" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Dlugosc">Długość</label>
+                    <input type="number" asp-for="Dlugosc" class="form-control" min="1" placeholder="Wpisz długość kary (w dniach)" />
+                    <span asp-validation-for="Dlugosc" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Przyczyna">Przyczyna</label>
+                    <input type="text" asp-for="Przyczyna" class="form-control" placeholder="Wpisz przyczynę" />
+                    <span asp-validation-for="Przyczyna" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Zbanuj</button>
+            </form>
+        </div>
+    </div>
+</div>

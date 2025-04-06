@@ -1,0 +1,93 @@
+﻿@model MatchesAndBetsViewModel
+
+@{
+    ViewData["Title"] = "Dostępne mecze i moje zakłady";
+}
+<style>
+    .error-message {
+        color: red;
+        font-size: 18px;
+        margin-top: 20px;
+    }
+</style>
+<h1>Dostępne mecze</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="error-message">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<table class="table text-white">
+    <thead>
+        <tr>
+            <th>Gospodarze</th>
+            <th>Goście</th>
+            <th>Data</th>
+            <th>Kurs na gospodarzy</th>
+            <th>Kurs na gości</th>
+            <th>Obstaw zwycięzcę</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var mecz in Model.Matches)
+        {
+            if (mecz.data > DateOnly.FromDateTime(DateTime.Now)){
+            <tr>
+                <td>@mecz.HomeTeamName</td>
+                <td>@mecz.AwayTeamName</td>
+                <td>@mecz.data.ToString("yyyy-MM-dd")</td>
+                <td>@mecz.HomeTeamOdds</td>
+                <td>@mecz.AwayTeamOdds</td>
+                <td>
+                    <form asp-action="setBet" method="post">
+                        <input type="hidden" name="MeczId" value="@mecz.MeczId" />
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="teamId" value="@mecz.HomeTeamId" id="home-@mecz.MeczId" required>
+                            <label class="form-check-label" for="home-@mecz.MeczId">Gospodarze</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="teamId" value="@mecz.AwayTeamId" id="away-@mecz.MeczId" required>
+                            <label class="form-check-label" for="away-@mecz.MeczId">Goście</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="Bet-@mecz.MeczId">Kwota</label>
+                            <input type="number" class="form-control" name="Bet" id="Bet-@mecz.MeczId" required min="1" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Obstaw</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        }
+    </tbody>
+</table>
+
+<h2>Moje zakłady</h2>
+
+<table class="table text-white">
+    <thead>
+        <tr>
+            <th>Mecz</th>
+            <th>Postawiona kwota</th>
+            <th>Wybrany zwycięzca</th>
+            <th>Wynik</th>
+          
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var zaklad in Model.Bets)
+        {
+            var match = Model.Matches.FirstOrDefault(m => m.MeczId == zaklad.IdMeczu);
+            
+            <tr>
+                <td>@match?.HomeTeamName vs @match?.AwayTeamName</td>
+                <td>@zaklad.PostawionaKwota</td>
+                <td>@(zaklad.IdZwyciezcy == match?.HomeTeamId ? "Gospodarze" : "Goście")</td>
+                <td>@(zaklad.czyPrzyznanoNagrode ? (zaklad.czyWygral ? "Wygrana" : "Przegrana") : "W trakcie")</td>
+         
+            </tr>
+        }
+    </tbody>
+</table>

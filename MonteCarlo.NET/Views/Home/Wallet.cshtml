@@ -1,0 +1,131 @@
+﻿@model List<MonteCarlo.NET.Models.Transakcja>
+@{
+    ViewData["Title"] = "Twoje brigmacoins";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zdrapka Games</title>
+    <style>
+     
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+            color: black;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button {
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+            color: black;
+        }
+
+            .button:hover {
+                background-color: #0056b3;
+                transform: scale(1.05);
+            }
+
+            .button:active {
+                background-color: #003f7f;
+            }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #212529;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #101418;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Twoje saldo wynosi @ViewData["Saldo"] brigmacoinsów</h1>
+
+    
+    <div class="card bg-dark text-white">
+        <h2>Zarzadzaj brigmacoinsami</h2>
+        <div class="button-group">
+            <a class="button" asp-area="" asp-controller="Home" asp-action="Payment">Wpłata</a>
+            <a class="button" asp-area="" asp-controller="Payout" asp-action="ShowPayout">Wypłata</a>
+        </div>
+    </div>
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rodzaj</th>
+                <th>Wartość</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var trans in Model)
+            {
+                <tr>
+                    <td>@trans.Typ</td>
+                    @if (trans.Typ.Equals("Wplata"))
+                    {
+                        <td>@trans.Kwota</td>
+                    }
+                    else
+                    {
+                        <td>-@trans.Kwota</td>
+                    }
+                    <td>@trans.Data</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</body>
+</html>

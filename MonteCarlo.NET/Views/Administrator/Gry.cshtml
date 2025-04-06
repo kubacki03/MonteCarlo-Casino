@@ -1,0 +1,58 @@
+﻿@model List<Gra>
+
+<h1>Gry</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Gry">
+		<div class="form-group w-50">
+			<label for="opcjaSort">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOptionGra != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOptionGra
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSortGra" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaGra)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchText">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchTextGra" class="form-control" autocomplete="off" />
+			</div>
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+<table class="table text-white">
+	<thead>
+		<tr>
+			<th>Nazwa gry</th>
+			<th>Minimalna stawka</th>
+			<th>Akcja</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var gra in Model)
+		{
+			<tr>
+				<td>@gra.Nazwa</td>
+				<form asp-controller="Administrator" asp-action="AktualizacjaStawki" method="post">
+					<td>
+						<input type="hidden" name="idGry" value="@gra.IdGry" />
+						<input type="number" name="nowaStawka" value="@gra.MinStawka" class=" form-control-sm" />
+					</td>
+					<td>
+						<button type="submit" class="btn btn-primary">Aktualizuj</button>
+					</td>
+				</form>
+			</tr>
+		}
+	</tbody>
+</table>

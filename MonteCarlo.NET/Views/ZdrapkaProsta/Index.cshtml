@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zdrapka</title>
+    <style>
+        .scratch-card {
+            position: relative;
+            width: 600px; 
+            height: 300px; 
+            margin: 20px auto;
+            border: 1px solid #000;
+        }
+
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .prize {
+            text-align: center;
+            font-size: 36px; 
+            font-weight: bold;
+            line-height: 300px; 
+        }
+
+
+        .message {
+            text-align: center;
+            font-size: 20px;
+            color: green;
+            margin-top: 20px;
+            display: none;
+        }
+
+
+        .no-win-message {
+            text-align: center;
+            font-size: 20px;
+            color: red;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .button:hover {
+                background-color: #45a049;
+                transform: scale(1.1);
+            }
+
+            .button:active {
+                background-color: #388e3c;
+                transform: scale(1);
+            }
+
+    </style>
+</head>
+<body>
+    <div class="scratch-card">
+        <div class="prize" id="prize">Ładowanie...</div>
+        <canvas id="scratchCanvas"></canvas>
+    </div>
+    <div class="message" id="winMessage">Gratulacje! Wygrałeś!</div>
+    <div class="no-win-message" id="noWinMessage">Brak wygranej</div>
+    
+    <button id="playAgainButton" class="button" style="display: none; margin: 20px auto; display: block;">Zagraj ponownie</button>
+
+
+    <script>
+                document.addEventListener("DOMContentLoaded", async () => {
+                   const canvas = document.getElementById("scratchCanvas");
+        canvas.width = 600; 
+        canvas.height = 300; 
+
+            const prizeElement = document.getElementById("prize");
+            const winMessage = document.getElementById("winMessage");
+            const noWinMessage = document.getElementById("noWinMessage");
+            const playAgainButton = document.getElementById("playAgainButton");
+            const ctx = canvas.getContext("2d");
+            let prize = "";
+            let scratchedArea = 0;
+
+            const scratchImage = new Image();
+            scratchImage.src = "/images/kon.jpg"; 
+
+            
+            async function resetGame() {
+               window.location.href="/game";
+            }
+
+            
+            playAgainButton.addEventListener("click", resetGame);
+
+           
+            async function fetchPrize() {
+                try {
+                    const response = await fetch("/generate");
+                    const data = await response.json();
+                    prizeElement.textContent =data.prize+" złotych";
+                    prize = data.prize;
+                } catch (error) {
+                    window.location.href="/game";
+                    console.error("Błąd ładowania nagrody:", error);
+                    prizeElement.textContent = "Błąd";
+                }
+            }
+
+            
+            await fetchPrize();
+
+            scratchImage.onload = () => {
+                ctx.drawImage(scratchImage, 0, 0, canvas.width, canvas.height);
+            };
+            scratchImage.src = "/images/kon.jpg"; 
+
+          
+            let isScratching = false;
+                    const totalArea = canvas.width * canvas.height; 
+        const threshold = totalArea * 0.5; 
+
+
+            function calculateScratchedArea(x, y) {
+                const radius = 20;
+                const area = Math.PI * radius * radius;
+                scratchedArea += area;
+            }
+
+            canvas.addEventListener("mousedown", () => (isScratching = true));
+            canvas.addEventListener("mouseup", () => (isScratching = false));
+            canvas.addEventListener("mousemove", (e) => {
+                if (isScratching) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    ctx.globalCompositeOperation = "destination-out"; 
+                    ctx.beginPath();
+                    ctx.arc(x, y, 50, 0, Math.PI * 2);
+                    ctx.fill();
+                    calculateScratchedArea(x, y);
+
+                 
+                    if (scratchedArea >= threshold) {
+                        if (prize !== 0) {
+                            winMessage.style.display = "block";
+                        } else {
+                            noWinMessage.style.display = "block";
+                        }
+                        playAgainButton.style.display = "block"; 
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

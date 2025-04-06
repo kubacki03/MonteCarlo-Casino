@@ -1,0 +1,169 @@
+﻿@model BetViewModel
+@{
+    ViewBag.Title = "Wyniki Wyścigu - Symulacja";
+    // Mapa koloru tekstowego na CSS:
+    Dictionary<string, string> colorMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Brąz", "#8B4513" },
+        { "Czarny", "#000000" },
+        { "Srebrny", "#C0C0C0" },
+        { "Kasztan", "#A0522D" },
+        { "Siwy", "#DCDCDC" },
+        { "Kary", "#2F4F4F" },
+        { "Gniady", "#A0522D" },
+        { "Dereszowaty", "#A9A9A9" }
+    };
+}
+
+<h2>Wyniki Wyścigu - Symulacja</h2>
+
+<style>
+    .race-track {
+        position: relative;
+        width: 800px;
+        border: 1px solid #ccc;
+        margin-bottom: 30px;
+        padding: 10px;
+    }
+
+    .horse-lane {
+        position: relative;
+        height: 50px;
+        margin-bottom: 10px;
+        border-bottom: 1px dotted #ddd;
+        display: flex;
+        align-items: center;
+    }
+
+    .horse {
+        position: absolute;
+        left: 0;
+        top: 10px;
+        width: 50px;
+        height: 30px;
+        /* Tło będzie kolorem konia. Sprite to maska, dzięki czemu koń będzie w danym kolorze */
+        background-color: #7cfc00;
+        /* Maskowanie konia */
+        -webkit-mask-image: url('@Url.Content("~/Resources/konik.png")');
+        -webkit-mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-image: url('@Url.Content("~/Resources/konik.png")');
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+    }
+
+    .horse-name {
+        margin-left: 60px; /* aby nazwa była obok konia */
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .finish-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: red;
+        right: 0;
+    }
+</style>
+
+<div class="race-track" id="raceTrack">
+    @if (Model.WynikiKoni != null && Model.WynikiKoni.Count > 0)
+    {
+        int laneNumber = 0;
+        foreach (var horseResult in Model.WynikiKoni)
+        {
+            var cssColor = colorMap.ContainsKey(horseResult.Kolor) ? colorMap[horseResult.Kolor] : "#7cfc00";
+            <div class="horse-lane" data-horse="@horseResult.KonImie" data-time="@horseResult.Czas" data-index="@laneNumber">
+                <div class="horse" style="background-color:@cssColor"></div>
+                <div class="horse-name">@horseResult.KonImie</div>
+            </div>
+            laneNumber++;
+        }
+        <div class="finish-line"></div>
+    }
+</div>
+
+<button id="startRaceBtn">Start Wyścigu</button>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Symulacja wyścigu z dokładnym czasem
+    $(function () {
+        var $lanes = $('.horse-lane');
+        var trackWidth = $('#raceTrack').width();
+        var finishLineX = trackWidth - 60; // miejsce docelowe
+
+        $('#startRaceBtn').click(function () {
+            $(this).prop('disabled', true);
+
+            var longestAnimation = 0;
+
+            $lanes.each(function () {
+                var $lane = $(this);
+                var horseTime = parseFloat($lane.attr('data-time')); // Czas końcowy dla konia
+                var $horse = $lane.find('.horse');
+                var laneIndex = $lane.attr('data-index');
+                var $horseTimeDisplay = $(`#horse-time-${laneIndex}`); // Element wyświetlający czas
+
+                // Czas w sekundach -> milisekundy
+                var animationDuration = horseTime * 1000;
+                if (animationDuration > longestAnimation) {
+                    longestAnimation = animationDuration;
+                }
+
+                // Dynamiczna animacja z przyspieszeniami/spowolnieniami
+                var startTime = Date.now();
+                var interval = setInterval(() => {
+                    var elapsedTime = (Date.now() - startTime) / 1000;
+
+                    if (elapsedTime >= horseTime) {
+                        elapsedTime = horseTime;
+                        clearInterval(interval); // Zatrzymaj aktualizację
+                    }
+
+                    // Dynamiczne zmiany prędkości (przyspieszenia/spowolnienia)
+                    var randomFactor = 1 + (Math.random() - 0.5) * 0.2; // Od -10% do +10% zmiany prędkości
+                    var currentPosition = (elapsedTime / horseTime) * 100 * randomFactor; // Pozycja jako % trasy
+
+                    if (currentPosition > 100) {
+                        currentPosition = 100; // Zapewnij, że koń nie przekroczy mety
+                    }
+
+                    $horse.css('left', currentPosition + '%'); // Aktualizuj pozycję wizualną konia
+                    $horseTimeDisplay.text(elapsedTime.toFixed(2)); // Aktualizuj wyświetlany czas
+                }, 100);
+
+                // Ustaw końcową animację (zgodną z czasem rzeczywistym)
+                $horse.animate({ left: '100%' }, animationDuration);
+            });
+
+
+            // Po zakończeniu najdłuższej animacji pokazujemy finalne wyniki
+            setTimeout(showFinalResults, longestAnimation + 1000);
+        });
+
+        function showFinalResults() {
+            var zwyciezca = "@Model.Zwyciezca";
+            var wybranyKon = "@Model.WybranyKon";
+            var wygrana = @Model.Wygrana.ToString().ToLower();
+            var wygranaKwota = @Model.WygranaKwota;
+
+            var resultMessage = "<h3>Zwyciężył koń: <strong>" + zwyciezca + "</strong></h3>";
+            if (wygrana) {
+                resultMessage += "<p>Gratulacje! Twój koń (" + wybranyKon + ") wygrał!</p>";
+                resultMessage += "<p>Wygrałeś: " + wygranaKwota.toFixed(2) + ".</p>";
+            } else {
+                resultMessage += "<p>Niestety, twój koń (" + wybranyKon + ") nie wygrał. Spróbuj ponownie.</p>";
+            }
+
+            $('#raceTrack').after(resultMessage);
+            $('#startRaceBtn').text("Powrót do obstawiania").removeAttr('disabled')
+                              .off('click')
+                              .click(function(){ window.location.href='@Url.Action("KonieMenu", "Konie")'; });
+        }
+    });
+</script>

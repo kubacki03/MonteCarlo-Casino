@@ -1,0 +1,78 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Weryfikacja kodu";
+}
+
+<h2>Weryfikacja email</h2>
+
+<form asp-controller="Payout" asp-action="ConfirmedPayout" method="post" id="verificationForm">
+    <div class="form-group">
+        <label>Na podany email została wysłana wiadomość z kodem do autoryzacji</label>
+        <div class="d-flex gap-2 justify-content-center">
+        
+            <input type="text" id="digit1" maxlength="1" class="form-control text-center code-input" required />
+            <input type="text" id="digit2" maxlength="1" class="form-control text-center code-input" required />
+            <input type="text" id="digit3" maxlength="1" class="form-control text-center code-input" required />
+            <input type="text" id="digit4" maxlength="1" class="form-control text-center code-input" required />
+        </div>
+    </div>
+
+   
+    <input type="hidden" id="kod" name="kod" />
+
+    <button type="submit" class="btn btn-primary mt-3">Weryfikuj</button>
+</form>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="error-message">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<style>
+    .code-input {
+        width: 50px; 
+        height: 50px; 
+        font-size: 1.5rem; 
+        text-align: center;
+    }
+</style>
+
+<script>
+    
+    const inputs = document.querySelectorAll(".code-input");
+
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+         
+            if (e.target.value.length === 1) {
+                const nextInput = inputs[index + 1];
+                if (nextInput) {
+                    nextInput.focus(); 
+                }
+            }
+        });
+
+      
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && e.target.value === "") {
+                const prevInput = inputs[index - 1];
+                if (prevInput) {
+                    prevInput.focus();
+                }
+            }
+        });
+    });
+
+  
+    document.getElementById("verificationForm").addEventListener("submit", function (e) {
+        const fullCode = Array.from(inputs).map(input => input.value).join(""); 
+        document.getElementById("kod").value = fullCode;
+
+      
+        if (fullCode.length !== 4) {
+            e.preventDefault(); 
+            alert("Wprowadź pełny kod!");
+        }
+    });
+</script>

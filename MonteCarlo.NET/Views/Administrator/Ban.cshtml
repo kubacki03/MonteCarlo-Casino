@@ -1,0 +1,59 @@
+﻿@model List<UzytkownikBan>
+
+<h1>Historia banów</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Ban">
+		<div class="form-group w-50">
+			<label for="opcjaSortBan">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOptionBan != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOptionBan
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSortBan" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaBanow)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchTextBan">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchTextBan" class="form-control" autocomplete="off" />
+			</div>
+
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+<table class="table text-white">
+	<thead>
+		<tr>
+			<th>Nazwa użytkownika</th>
+			<th>Nazwisko</th>
+			<th>Imie</th>
+			<th>Data początku banu</th>
+			<th>Czas banu (dni)</th>
+			<th>Przyczyna</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var wiersz in Model)
+		{
+			<tr>
+				<td>@wiersz.NazwaUzytkownika</td>
+				<td>@wiersz.Nazwisko</td>
+				<td>@wiersz.Imie</td>
+				<td>@wiersz.Data.ToString("dd.MM.yyyy")</td>
+				<td>@wiersz.Dlugosc</td>
+				<td>@wiersz.Przyczyna</td>
+			</tr>
+			
+		}
+	</tbody>
+</table>

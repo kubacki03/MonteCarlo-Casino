@@ -1,0 +1,48 @@
+﻿<h1>Szczegóły zgłoszenia</h1>
+
+<div class="card mb-4 bg-dark">
+    <div class="card-header">
+        <h5>
+            <strong>Tytuł:</strong> @Model.Tytul
+        </h5>
+    </div>
+    <div class="card-body">
+        <p class="card-text">
+            <strong>Treść:</strong> @Model.Tresc
+        </p>
+        <p class="card-text">
+            <strong>Data:</strong> @Model.Data.ToString("dd.MM.yyyy")
+        </p>
+        <p class="card-text">
+            <strong>Status:</strong> 
+            <form asp-controller="Administrator" asp-action="ZmienStatus" method="post">
+                <input type="hidden" name="zgloszenieId" value="@Model.IdZgloszenia" />
+                <div class="btn-group">
+                    <input type="radio" class="btn-check" name="nowyStatus" id="nowe" value="Nowe" @(Model.Status == "Nowe" ? "checked" : "")>
+                    <label class="btn btn-outline-primary" for="nowe">Nowe</label>
+
+                    <input type="radio" class="btn-check" name="nowyStatus" id="wToku" value="W toku" @(Model.Status == "W toku" ? "checked" : "")>
+                    <label class="btn btn-outline-warning" for="wToku">W toku</label>
+
+                    <input type="radio" class="btn-check" name="nowyStatus" id="zrobione" value="Zrobione" @(Model.Status == "Zrobione" ? "checked" : "")>
+                    <label class="btn btn-outline-success" for="zrobione">Zrobione</label>
+                    
+                </div>
+                <br />
+                <button type="submit" class="btn btn-primary mt-3">Zmień</button>
+
+            </form>
+        </p>
+        @if (!string.IsNullOrEmpty(Model.Notatki))
+        {
+            <p class="card-text">
+                <strong>Notatki:</strong> @Model.Notatki
+            </p>
+        }
+        else
+        {
+            <p class="card-text text-muted">Brak notatek</p>
+        }
+    </div>
+</div>
+

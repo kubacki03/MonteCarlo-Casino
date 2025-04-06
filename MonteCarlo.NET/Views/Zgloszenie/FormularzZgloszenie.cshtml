@@ -1,0 +1,28 @@
+﻿@model FormularzZgloszenie
+
+<div class="container">
+    <div class="row justify-content-center align-items-center">
+
+        <div class="col-12 col-md-6">
+            <h1>Wyślij zgłoszenie</h1>
+            <form asp-controller="Zgloszenie" asp-action="WyslijZgloszenie" method="post">
+                <div class="form-group">
+                    <label for="Tytul">Tytuł</label>
+                    <input type="text" asp-for="Tytul" class="form-control" placeholder="Wpisz tytuł" />
+                    <span asp-validation-for="Tytul" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Tresc">Treść</label>
+                    <input type="text" asp-for="Tresc" class="form-control" placeholder="Wypisz treść" />
+                    <span asp-validation-for="Tresc" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Notatki">Notatka</label>
+                    <input type="text" asp-for="Notatki" class="form-control" />
+                    <span asp-validation-for="Notatki" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Wyślij zgłoszenie</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+﻿@model List<UzytkownikZgloszenie>
+
+<h1>Historia zgłoszeń</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Zgloszenie">
+		<div class="form-group w-50">
+			<label for="opcjaSort">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOptionZgloszenie != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOptionZgloszenie
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSortZgloszenie" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaZgloszenie)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchText">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchTextZgloszenie" class="form-control" autocomplete="off" />
+			</div>
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+<table class="table text-white">
+	<thead>
+		<tr>
+			<th>Nazwa użytkownika</th>
+			<th>Nazwisko</th>
+			<th>Imie</th>
+			<th>Data zgłoszenia</th>
+			<th>Status</th>
+			<th>Tytuł</th>
+			<th>Szczegóły</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var zgloszenie in Model)
+		{
+			<tr>
+				<td>@zgloszenie.NazwaUzytkownika</td>
+				<td>@zgloszenie.Nazwisko</td>
+				<td>@zgloszenie.Imie</td>
+				<td>@zgloszenie.Data.ToString("dd.MM.yyyy")</td>
+				<td>@zgloszenie.Status</td>
+				<td>@zgloszenie.Tytul</td>
+				<td>
+					<form asp-controller="Administrator" asp-action="SzczegolyZgloszenia" method="post">
+						<input type="hidden" id="poleZgloszenieId" name="zgloszenieId" value="@zgloszenie.IdZgloszenia" />
+						<button type="submit" class="btn btn-info">Szczegóły</button>
+					</form>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

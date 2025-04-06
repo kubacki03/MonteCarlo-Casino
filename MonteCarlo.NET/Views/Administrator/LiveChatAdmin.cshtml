@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokoje Czatu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <style>
+       
+      
+
+      
+      
+
+        .chat-container {
+            width: 60%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+            .chat-container label,
+            .chat-container input,
+            .chat-container button {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+                font-size: 16px;
+                padding: 10px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }
+
+            .chat-container input {
+                margin-bottom: 20px;
+            }
+
+            .chat-container button {
+                cursor: pointer;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+            }
+
+                .chat-container button:hover {
+                    background-color: #007bff;
+                }
+
+                .chat-container button:disabled {
+                    background-color: #ccc;
+                    cursor: not-allowed;
+                }
+
+        #messages {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+            #messages div {
+                background-color: #e9ecef;
+                padding: 8px;
+                margin-bottom: 5px;
+                border-radius: 4px;
+                max-width: 80%;
+                word-wrap: break-word;
+                 color: black;
+            }
+
+
+        #message {
+            width: 80%;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        
+        .send-button-container {
+            text-align: right;
+        }
+
+            .send-button-container button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                font-weight: bold;
+                padding: 10px 15px;
+                border-radius: 4px;
+            }
+
+                .send-button-container button:hover {
+                    background-color: #0056b3;
+                }
+
+      
+        #availableRooms {
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: black;
+        }
+
+            #availableRooms div {
+                background-color: #ffffff;
+                padding: 8px;
+                margin-bottom: 5px;
+                border-radius: 4px;
+                cursor: pointer;
+                color: black;
+            }
+
+                #availableRooms div:hover {
+                    background-color: #d3d3d3;
+                }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <label style="color:black" for="roomName">Nazwa pokoju:</label>
+        <input type="text" id="roomName" placeholder="Wpisz nazwę pokoju">
+        <button onclick="joinRoom()">Dołącz do pokoju</button>
+        <button onclick="leaveRoom()">Opuść pokój</button>
+    </div>
+    <div class="chat-container">
+        <button onclick="getAvailableRooms()">Pokaż dostępne pokoje</button>
+    </div>
+    <div id="availableRooms"></div>
+    <div id="messages"></div>
+
+    <div class="chat-container">
+        <input type="text" id="message" placeholder="Wiadomość">
+        <div class="send-button-container">
+            <button onclick="sendMessage()">Wyślij wiadomość</button>
+        </div>
+    </div>
+
+  
+
+    
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+        let currentRoom = "";
+        let userName = "";
+
+        async function getUserName() {
+            try {
+                const response = await fetch('/getName'); // Endpoint do pobrania imienia użytkownika
+                if (response.ok) {
+                    userName = await response.text();
+                    console.log("Imię użytkownika pobrano:", userName);
+                } else {
+                    console.error("Nie udało się pobrać imienia użytkownika.");
+                }
+            } catch (error) {
+                console.error("Błąd podczas pobierania imienia użytkownika:", error);
+            }
+        }
+
+        
+        connection.on("ReceiveMessage", (user, message) => {
+            const msgDiv = document.getElementById("messages");
+            const msg = document.createElement("div");
+            msg.textContent = `${user}: ${message}`;
+            msgDiv.appendChild(msg);
+        });
+
+      
+        connection.start()
+            .then(() => getUserName())
+            .catch(err => console.error(err.toString()));
+
+       
+        function joinRoom() {
+            const roomName = document.getElementById("roomName").value;
+            if (!roomName) {
+                alert("Wpisz nazwę pokoju!");
+                return;
+            }
+            connection.invoke("JoinRoom", roomName)
+                .then(() => currentRoom = roomName)
+                .catch(err => console.error(err.toString()));
+        }
+
+       
+        function leaveRoom() {
+            if (currentRoom) {
+                connection.invoke("LeaveRoom", currentRoom)
+                    .then(() => currentRoom = "")
+                    .catch(err => console.error(err.toString()));
+            } else {
+                alert("Nie jesteś w żadnym pokoju!");
+            }
+        }
+
+        
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (!currentRoom) {
+                alert("Najpierw dołącz do pokoju!");
+                return;
+            }
+            if (!message) {
+                alert("Wiadomość nie może być pusta!");
+                return;
+            }
+
+            connection.invoke("SendMessageToRoom", currentRoom, userName, message)
+                .catch(err => console.error(err.toString()));
+        }
+
+        
+        async function getAvailableRooms() {
+            try {
+                const rooms = await connection.invoke("GetAvailableRooms");
+                const availableRoomsDiv = document.getElementById("availableRooms");
+                availableRoomsDiv.innerHTML = ""; 
+
+                if (rooms.length === 0) {
+                    availableRoomsDiv.textContent = "Brak dostępnych pokoi.";
+                } else {
+                    rooms.forEach(room => {
+                        const roomDiv = document.createElement("div");
+                        roomDiv.textContent = room;
+                        roomDiv.onclick = () => joinRoomFromAvailable(room);
+                        availableRoomsDiv.appendChild(roomDiv);
+                    });
+                }
+            } catch (err) {
+                console.error("Błąd podczas pobierania pokoi:", err);
+            }
+        }
+
+        
+        function joinRoomFromAvailable(roomName) {
+            document.getElementById("roomName").value = roomName;
+            joinRoom();
+        }
+
+    </script>
+</body>
+</html>

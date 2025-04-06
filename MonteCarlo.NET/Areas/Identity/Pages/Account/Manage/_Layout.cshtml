@@ -1,0 +1,70 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    {
+        Layout = parentLayout.ToString();
+    }
+    else
+    {
+        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+    }
+}
+
+<h1>Zarządzaj swoim kontem</h1>
+
+<div>
+    <h2>Zmień swoje ustawienia</h2>
+    <hr />
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_ManageNav" />
+        </div>
+        <div class="col-md-9">
+            @RenderBody()
+        </div>
+       
+
+    </div>
+</div>
+
+<script>
+
+    let audioElement;
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        if (!window.audioElement) {
+
+            audioElement = new Audio("/audio/song.mp3");
+            audioElement.loop = true;
+            audioElement.volume = 0.1;
+
+
+            audioElement.play().catch(error => {
+                console.log("Autoplay został zablokowany przez przeglądarkę:", error);
+            });
+
+
+            window.audioElement = audioElement;
+        } else {
+
+            audioElement = window.audioElement;
+        }
+
+
+        const savedTime = localStorage.getItem("musicTime");
+        if (savedTime) {
+            audioElement.currentTime = parseFloat(savedTime);
+        }
+    });
+
+
+    window.addEventListener("beforeunload", () => {
+        if (window.audioElement) {
+            localStorage.setItem("musicTime", window.audioElement.currentTime);
+        }
+    });
+</script>
+@section Scripts {
+
+    @RenderSection("Scripts", required: false)
+}

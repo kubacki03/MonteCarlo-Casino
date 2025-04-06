@@ -1,0 +1,51 @@
+﻿<div class="d-flex justify-content-center align-items-center">
+    <div class="text-center">
+
+        <h1>Wypłać swoje brigmacoinsy</h1>
+        <p>Pamiętaj! 95% hazardzistów poddaje się przed pierwszą wygraną</p>
+
+        <div style="color: black" class="d-flex justify-content-center">
+        <div class="card bg-dark text-white" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Wpisz kwotę</h5>
+                <form asp-controller="Payout" asp-action="CreatePayout" method="post">
+                    <div class="form-group">
+                        <label for="amount">Kwota (więcej niż 10 zł)</label>
+                        <input type="number" name="kwota" class="form-control" id="amount" min="10" required />
+
+                        <label for="accountNumber">Podaj numer konta</label>
+                        <input type="text" name="numer" class="form-control" id="accountNumber" required maxlength="26" />
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary mt-3" id="submitButton" disabled>Wybierz</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const accountInput = document.getElementById('accountNumber');
+        const submitButton = document.getElementById('submitButton');
+
+        accountInput.addEventListener('input', function () {
+            if (accountInput.value.length === 26) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        });
+    });
+</script>

@@ -1,0 +1,89 @@
+﻿@model List<MonteCarlo.NET.Models.Level>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Graczy</title>
+    <style>
+    
+
+        h1, h2, h3 {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        h1 {
+            color: #007BFF;
+        }
+
+        h2 {
+            color: #28a745;
+        }
+
+        h3 {
+            color: #ffc107;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+            color: black;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+     
+
+    </style>
+</head>
+<body>
+
+    <h1>Najlepszy gracz w MonteCarlo to @ViewData["BestPlayer"]!</h1>
+    <h2>Do następnego poziomu brakuje Ci @ViewData["ToNextLevel"] zagranych gier</h2>
+    <h3>Twój aktualny poziom to @ViewData["Level"]</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Numer poziomu</th>
+                <th>Minimalna liczba rozegranych gier</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var level in Model)
+            {
+                <tr>
+                    <td>@level.NumberOfLevel</td>
+                    <td>@level.MinimumPlayedGames</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</body>
+</html>

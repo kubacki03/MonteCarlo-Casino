@@ -1,0 +1,74 @@
+﻿@page
+
+@{
+    ViewData["Title"] = "Manage Email";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@model Limit
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (@ViewData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        <p> @ViewData["Error"]</p>
+    </div>
+}
+
+@if (Model != null)
+{
+    <h1>Twój limit: @Model.Kwota jest ważny od @Model.Data</h1>
+}
+else
+{
+    <h1>Brak limitu</h1>
+}
+<p>Swój limit możesz zmienić po 24 godzinach od ostatniej zmiany</p>
+<div class="col-md-4">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Wpisz kwotę</h5>
+            <form asp-controller="Limits" asp-action="SetLimit" method="post">
+                <div class="form-group">
+                    <label for="amount">Kwota (więcej niż 10 zł)</label>
+                    <input type="number" name="limit" class="form-control" id="limit" min="10" required />
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" id="submitButton">Wybierz</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Wyklucz się z gry na 24h</h5>
+            <form asp-controller="Limits" asp-action="SetLimit" method="post">
+                <div class="form-group">
+                    <input type="hidden" name="limit" class="form-control" id="limit" value="0" required />
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" id="submitButton">Wybierz</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

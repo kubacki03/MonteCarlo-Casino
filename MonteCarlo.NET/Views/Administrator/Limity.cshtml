@@ -1,0 +1,55 @@
+﻿@model List<UzytkownikLimity>
+
+<h1>Limity użytkowników</h1>
+
+<div class="row">
+	<form method="get" asp-controller="Administrator" asp-action="Limity">
+		<div class="form-group w-50">
+			<label for="opcjaSort">Wybierz opcje sortowania</label>
+			@if (ViewBag.SelectedOptionLimit != null)
+			{
+				<div class="alert alert-info">
+					@ViewBag.SelectedOptionLimit
+				</div>
+			}
+			<select name="opcjaSort" id="opcjaSortLimit" class="form-control">
+				<option value="" selected disabled>Wybierz opcję sortowania</option>
+				@foreach (var opcja in ViewBag.opcjeSortowaniaLimitow)
+				{
+					<option value="@opcja">@opcja</option>
+				}
+			</select>
+		</div>
+		<label for="searchText">Wyszukaj użytkownika</label>
+		<div class="d-flex">
+			<div class="formg-group w-50">
+				<input type="text" name="searchText" id="searchTextLimit" class="form-control" autocomplete="off" />
+			</div>
+			<button type="submit" class="btn btn-primary ms-5 btnCustom">Filtruj</button>
+		</div>
+	</form>
+</div>
+
+<table class="table text-white">
+	<thead>
+		<tr>
+			<th>Nazwa użytkownika</th>
+			<th>Nazwisko</th>
+			<th>Imie</th>
+			<th>Data</th>
+			<th>Kwota</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var wiersz in Model)
+		{
+			<tr>
+				<td>@wiersz.NazwaUzytkownika</td>
+				<td>@wiersz.Nazwisko</td>
+				<td>@wiersz.Imie</td>
+				<td>@wiersz.Data</td>
+				<td>@wiersz.Kwota</td>
+			</tr>
+		}
+	</tbody>
+</table>
