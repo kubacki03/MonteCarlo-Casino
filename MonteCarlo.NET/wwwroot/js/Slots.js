@@ -43,7 +43,7 @@
         CzyWygrano();
         setTimeout(() => {
             console.log("Przekierowanie po 2 sekundach...");
-            window.location.href = "/Home/Slotsy";
+            window.location.href = "/Home/Slots";
         }, 2000);
     }
 
@@ -73,7 +73,7 @@
 
         const stawka = parseFloat(document.querySelector("#stawka").value) || 0;
 
-        fetch('/Home/ZwrocWynik', {
+        fetch('/Home/SubmitSlotsResult', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

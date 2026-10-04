@@ -1,14 +1,14 @@
 ﻿namespace MonteCarlo.NET.Models
 {
-    public class UzytkownikGraKonta
+    public class UserGameAccount
     {
-        public string NazwaUzytkownika { get; set; }
-        public string Nazwisko { get; set; }
-        public string Imie { get; set; }
-        public string NazwaGry { get; set; }
-        public float IlePostawiono { get; set; }
-        public float IleWygrano { get; set; }
-        public DateTime Czas { get; set; }
+        public string UserName { get; set; }
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+        public string GameName { get; set; }
+        public float AmountStaked { get; set; }
+        public float AmountWon { get; set; }
+        public DateTime PlayedAt { get; set; }
 
     }
 }

@@ -1,11 +1,14 @@
 ﻿using Microsoft.Build.Framework;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-    public class Druzyna
+    public class Team
     {
         [Required]
-        public int DruzynaId { get; set; }
+        [Column("DruzynaId")]
+        public int TeamId { get; set; }
 
         [Required]
         public string Name { get; set; }

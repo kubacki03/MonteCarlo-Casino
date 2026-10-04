@@ -2,15 +2,15 @@
 
 namespace MonteCarlo.NET.Models
 {
-	public class FormularzBan
+	public class BanFormViewModel
 	{
 		[Required]
 		[DataType(DataType.Date)]
-		public DateTime Data { get; set; } = DateTime.Today;
+		public DateTime Date { get; set; } = DateTime.Today;
 		[Required]
-		public int Dlugosc { get; set; }
+		public int DurationDays { get; set; }
 		[Required]
 		[MaxLength(250)]
-		public string Przyczyna { get; set; }
+		public string Reason { get; set; }
 	}
 }

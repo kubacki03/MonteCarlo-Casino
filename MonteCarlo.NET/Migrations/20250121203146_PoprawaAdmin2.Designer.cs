@@ -11,7 +11,7 @@ using MonteCarlo.NET.Data;
 
 namespace MonteCarlo.NET.Migrations
 {
-    [DbContext(typeof(KasynoContext))]
+    [DbContext(typeof(CasinoContext))]
     [Migration("20250121203146_PoprawaAdmin2")]
     partial class PoprawaAdmin2
     {

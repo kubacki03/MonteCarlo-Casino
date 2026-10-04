@@ -1,4 +1,4 @@
-﻿@model List<MonteCarlo.NET.Models.Transakcja>
+﻿@model List<MonteCarlo.NET.Models.Transaction>
 @{
     ViewData["Title"] = "Twoje brigmacoins";
 }
@@ -112,16 +112,16 @@
             @foreach (var trans in Model)
             {
                 <tr>
-                    <td>@trans.Typ</td>
-                    @if (trans.Typ.Equals("Wplata"))
+                    <td>@trans.Type</td>
+                    @if (trans.Type.Equals("Wplata"))
                     {
-                        <td>@trans.Kwota</td>
+                        <td>@trans.Amount</td>
                     }
                     else
                     {
-                        <td>-@trans.Kwota</td>
+                        <td>-@trans.Amount</td>
                     }
-                    <td>@trans.Data</td>
+                    <td>@trans.Date</td>
                 </tr>
             }
         </tbody>

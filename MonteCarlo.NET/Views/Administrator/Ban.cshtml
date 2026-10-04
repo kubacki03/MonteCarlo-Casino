@@ -1,4 +1,4 @@
-﻿@model List<UzytkownikBan>
+﻿@model List<UserBan>
 
 <h1>Historia banów</h1>
 
@@ -6,17 +6,17 @@
 	<form method="get" asp-controller="Administrator" asp-action="Ban">
 		<div class="form-group w-50">
 			<label for="opcjaSortBan">Wybierz opcje sortowania</label>
-			@if (ViewBag.SelectedOptionBan != null)
+			@if (ViewBag.SelectedBanOption != null)
 			{
 				<div class="alert alert-info">
-					@ViewBag.SelectedOptionBan
+					@ViewBag.SelectedBanOption
 				</div>
 			}
-			<select name="opcjaSort" id="opcjaSortBan" class="form-control">
+			<select name="sortOption" id="opcjaSortBan" class="form-control">
 				<option value="" selected disabled>Wybierz opcję sortowania</option>
-				@foreach (var opcja in ViewBag.opcjeSortowaniaBanow)
+				@foreach (var option in ViewBag.banSortOptions)
 				{
-					<option value="@opcja">@opcja</option>
+					<option value="@option">@option</option>
 				}
 			</select>
 		</div>
@@ -43,15 +43,15 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var wiersz in Model)
+		@foreach (var row in Model)
 		{
 			<tr>
-				<td>@wiersz.NazwaUzytkownika</td>
-				<td>@wiersz.Nazwisko</td>
-				<td>@wiersz.Imie</td>
-				<td>@wiersz.Data.ToString("dd.MM.yyyy")</td>
-				<td>@wiersz.Dlugosc</td>
-				<td>@wiersz.Przyczyna</td>
+				<td>@row.UserName</td>
+				<td>@row.LastName</td>
+				<td>@row.FirstName</td>
+				<td>@row.Date.ToString("dd.MM.yyyy")</td>
+				<td>@row.DurationDays</td>
+				<td>@row.Reason</td>
 			</tr>
 			
 		}

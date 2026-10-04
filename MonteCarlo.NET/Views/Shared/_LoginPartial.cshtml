@@ -1,8 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using MonteCarlo.NET.Models
 
-@inject SignInManager<KontoUzytkownika> SignInManager
-@inject UserManager<KontoUzytkownika> UserManager
+@inject SignInManager<UserAccount> SignInManager
+@inject UserManager<UserAccount> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))

@@ -1,20 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
 	public class Ban
 	{
 		[Required]
-		public int IdBana { get; set; }
+		[Column("IdBana")]
+		public int BanId { get; set; }
 		[Required]
 		[DataType(DataType.Date)]
-		public DateTime Data { get; set; } = DateTime.Today;
+		[Column("Data")]
+		public DateTime Date { get; set; } = DateTime.Today;
 		[Required]
-		public int Dlugosc { get; set; }
+		[Column("Dlugosc")]
+		public int DurationDays { get; set; }
 		[MaxLength(250)]
-		public string? Przyczyna { get; set; }
+		[Column("Przyczyna")]
+		public string? Reason { get; set; }
 		[Required]
-		public string KontoUzytkownikaId { get; set; }
-		public virtual KontoUzytkownika KontoUzytkownika { get; set; }
+		[Column("KontoUzytkownikaId")]
+		public string UserAccountId { get; set; }
+		public virtual UserAccount UserAccount { get; set; }
 	}
 }

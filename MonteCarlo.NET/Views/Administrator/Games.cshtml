@@ -1,22 +1,22 @@
-﻿@model List<Gra>
+﻿@model List<Game>
 
 <h1>Gry</h1>
 
 <div class="row">
-	<form method="get" asp-controller="Administrator" asp-action="Gry">
+	<form method="get" asp-controller="Administrator" asp-action="Games">
 		<div class="form-group w-50">
 			<label for="opcjaSort">Wybierz opcje sortowania</label>
-			@if (ViewBag.SelectedOptionGra != null)
+			@if (ViewBag.SelectedGameOption != null)
 			{
 				<div class="alert alert-info">
-					@ViewBag.SelectedOptionGra
+					@ViewBag.SelectedGameOption
 				</div>
 			}
-			<select name="opcjaSort" id="opcjaSortGra" class="form-control">
+			<select name="sortOption" id="opcjaSortGra" class="form-control">
 				<option value="" selected disabled>Wybierz opcję sortowania</option>
-				@foreach (var opcja in ViewBag.opcjeSortowaniaGra)
+				@foreach (var option in ViewBag.gameSortOptions)
 				{
-					<option value="@opcja">@opcja</option>
+					<option value="@option">@option</option>
 				}
 			</select>
 		</div>
@@ -39,14 +39,14 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var gra in Model)
+		@foreach (var game in Model)
 		{
 			<tr>
-				<td>@gra.Nazwa</td>
-				<form asp-controller="Administrator" asp-action="AktualizacjaStawki" method="post">
+				<td>@game.Name</td>
+				<form asp-controller="Administrator" asp-action="UpdateMinStake" method="post">
 					<td>
-						<input type="hidden" name="idGry" value="@gra.IdGry" />
-						<input type="number" name="nowaStawka" value="@gra.MinStawka" class=" form-control-sm" />
+						<input type="hidden" name="gameId" value="@game.GameId" />
+						<input type="number" name="newStake" value="@game.MinStake" class=" form-control-sm" />
 					</td>
 					<td>
 						<button type="submit" class="btn btn-primary">Aktualizuj</button>

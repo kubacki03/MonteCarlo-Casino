@@ -6,7 +6,7 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">50 zł</h5>
                     <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
-                        <input type="hidden" name="kwota" value="50" />
+                        <input type="hidden" name="amount" value="50" />
                         <button type="submit" class="btn btn-primary">Zaplac</button>
                     </form>
                 </div>
@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <h5 class="card-title">100 zł</h5>
                     <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
-                        <input type="hidden" name="kwota" value="100" />
+                        <input type="hidden" name="amount" value="100" />
                         <button type="submit" class="btn btn-primary">Zaplac</button>
                     </form>
                 </div>
@@ -30,7 +30,7 @@
                 <div class="card-body">
                     <h5 class="card-title">1000 zł</h5>
                     <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
-                        <input type="hidden" name="kwota" value="1000" />
+                        <input type="hidden" name="amount" value="1000" />
                         <button type="submit" class="btn btn-primary">Zaplac</button>
                     </form>
                 </div>

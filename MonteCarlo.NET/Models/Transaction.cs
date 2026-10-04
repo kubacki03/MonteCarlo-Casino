@@ -1,20 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-    public class Transakcja
+    public class Transaction
     {
         [Required]
-        public int IdTransakcji { get; set; }
+        [Column("IdTransakcji")]
+        public int TransactionId { get; set; }
         [Required]
-        public string KontoUzytkownikaId { get; set; }
-        public virtual KontoUzytkownika KontoUzytkownika { get; set; }
+        [Column("KontoUzytkownikaId")]
+        public string UserAccountId { get; set; }
+        public virtual UserAccount UserAccount { get; set; }
         [Required]
-        public DateTime Data { get; set; }
+        [Column("Data")]
+        public DateTime Date { get; set; }
         [Required]
-        public double Kwota { get; set; }
+        [Column("Kwota")]
+        public double Amount { get; set; }
         [Required]
         [MaxLength(50)]
-        public string Typ { get; set; }
+        [Column("Typ")]
+        public string Type { get; set; }
     }
 }

@@ -1,19 +1,19 @@
 ﻿namespace MonteCarlo.NET.Models
 {
-    public class Konie
+    public class Horse
     {
-        public int wiek { get; set; }
-        public float waga { get; set; }
-        public float rozmiar { get; set; }
-        public string kolor { get; set; }
-        public string imie { get; set; }
+        public int Age { get; set; }
+        public float Weight { get; set; }
+        public float Size { get; set; }
+        public string Color { get; set; }
+        public string Name { get; set; }
 
-        public float predkosc { get; set; }
-        public float wytrzymalosc { get; set; }
+        public float Speed { get; set; }
+        public float Stamina { get; set; }
 
-        public float winratio { get; set; }
-        public int ilosc_zwyciestw { get; set; }
+        public float WinRatio { get; set; }
+        public int WinCount { get; set; }
 
-        private float pokonana_trasa { get; set; }
+        private float DistanceCovered { get; set; }
     }
 }

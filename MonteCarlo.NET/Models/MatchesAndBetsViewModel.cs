@@ -3,8 +3,8 @@
     public class MatchesAndBetsViewModel
     {
       
-        public IEnumerable<Mecz> Matches { get; set; }
-        public IEnumerable<Zaklad> Bets { get; set; }
+        public IEnumerable<Match> Matches { get; set; }
+        public IEnumerable<Bet> Bets { get; set; }
     }
 
 }

@@ -1,18 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
 	public class Limit
 	{
 		[Required]
-		public int IdLimitu { get; set; }
+		[Column("IdLimitu")]
+		public int LimitId { get; set; }
 		[Required]
-		public string KontoUzytkownikaId { get; set; }
-		public virtual KontoUzytkownika KontoUzytkownika { get; set; }
+		[Column("KontoUzytkownikaId")]
+		public string UserAccountId { get; set; }
+		public virtual UserAccount UserAccount { get; set; }
 		[Required]
-		public double Kwota { get; set; }
+		[Column("Kwota")]
+		public double Amount { get; set; }
 		[Required]
-		public DateTime Data { get; set; }
+		[Column("Data")]
+		public DateTime Date { get; set; }
 
 	}
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MonteCarlo.NET.HealthCheck;
+using MonteCarlo.NET.Services.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,10 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddSingleton<ExceptionTracker>();
+builder.Services.AddSingleton(Random.Shared);
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IScratchCardService, ScratchCardService>();
+builder.Services.AddScoped<IFootballBetService, FootballBetService>();
 
 
 
@@ -34,13 +39,13 @@ builder.Services.AddHealthChecks()
 
 
 
-builder.Services.AddDbContext<KasynoContext>(options =>
+builder.Services.AddDbContext<CasinoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MonteCarloDB"))
 );
 
-builder.Services.AddDefaultIdentity<KontoUzytkownika>()
+builder.Services.AddDefaultIdentity<UserAccount>()
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<KasynoContext>();
+    .AddEntityFrameworkStores<CasinoContext>();
 
 builder.Services.AddSingleton<IStripeClient>(new StripeClient(builder.Configuration["Stripe:SecretKey"]));
 builder.Services.AddCors(options =>

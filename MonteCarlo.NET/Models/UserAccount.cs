@@ -2,37 +2,29 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-	public class KontoUzytkownika : IdentityUser
+	public class UserAccount : IdentityUser
 	{
-		//[Required]
-		//public int NrKonta { get; set; }
 		[Required]
 		[MinLength(2)]
 		[MaxLength(50)]
-		public string Imie { get; set; }
+		[Column("Imie")]
+		public string FirstName { get; set; }
 		[Required]
 		[MinLength(2)]
 		[MaxLength(50)]
-		public string Nazwisko { get; set; }
-		//[Required]
-		//[MaxLength(50)]
-		//public string Email { get; set; }
-		//[Required]
-		//[MaxLength(50)]
-		//public string Login { get; set; }
-		//[Required]
-		//[MaxLength(50)]
-		//public string Password { get; set; }
-		public double? Saldo { get; set; }
-		//[Required]
-		//public string Status { get; set; } // status przyjmuje wartości: standardowy, VIP, admin
+		[Column("Nazwisko")]
+		public string LastName { get; set; }
+		[Column("Saldo")]
+		public double? Balance { get; set; }
 		public int? Level { get; set; }
-		public virtual ICollection<GraKonto>? GryKonta { get; set; }
-		public virtual ICollection<Transakcja>? Trasakcje { get; set; }
-		public virtual ICollection<Ban>? Bany { get; set; }
-		public virtual ICollection<Zgloszenie>? Zgloszenia { get; set; }
-		public virtual ICollection<Limit>? Limity { get; set; }
+		public virtual ICollection<GameAccount>? GameAccounts { get; set; }
+		public virtual ICollection<Transaction>? Transactions { get; set; }
+		public virtual ICollection<Ban>? Bans { get; set; }
+		public virtual ICollection<Report>? Reports { get; set; }
+		public virtual ICollection<Limit>? Limits { get; set; }
 	}
 }

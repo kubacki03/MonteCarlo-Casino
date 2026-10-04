@@ -1,22 +1,22 @@
-﻿@model List<UzytkownikGraKonta>
+﻿@model List<UserGameAccount>
 
 <h1>Historia rozgrywek</h1>
 
 <div class="row">
-	<form method="get" asp-controller="Administrator" asp-action="GraKonto">
+	<form method="get" asp-controller="Administrator" asp-action="GameAccounts">
 		<div class="form-group w-50">
 			<label for="opcjaSort">Wybierz opcje sortowania</label>
-			@if (ViewBag.SelectedOptionGraKonto != null)
+			@if (ViewBag.SelectedGameAccountOption != null)
 			{
 				<div class="alert alert-info">
-					@ViewBag.SelectedOptionGraKonto
+					@ViewBag.SelectedGameAccountOption
 				</div>
 			}
-			<select name="opcjaSort" id="opcjaSortGraKonto" class="form-control">
+			<select name="sortOption" id="opcjaSortGraKonto" class="form-control">
 				<option value="" selected disabled>Wybierz opcję sortowania</option>
-				@foreach (var opcja in ViewBag.opcjeSortowaniaGraKonto)
+				@foreach (var option in ViewBag.gameAccountSortOptions)
 				{
-					<option value="@opcja">@opcja</option>
+					<option value="@option">@option</option>
 				}
 			</select>
 		</div>
@@ -43,16 +43,16 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var wiersz in Model)
+		@foreach (var row in Model)
 		{
 			<tr>
-				<td>@wiersz.NazwaUzytkownika</td>
-				<td>@wiersz.Nazwisko</td>
-				<td>@wiersz.Imie</td>
-				<td>@wiersz.NazwaGry</td>
-				<td>@wiersz.IlePostawiono</td>
-				<td>@wiersz.IleWygrano</td>
-				<td>@wiersz.Czas</td>
+				<td>@row.UserName</td>
+				<td>@row.LastName</td>
+				<td>@row.FirstName</td>
+				<td>@row.GameName</td>
+				<td>@row.AmountStaked</td>
+				<td>@row.AmountWon</td>
+				<td>@row.PlayedAt</td>
 			</tr>
 		}
 	</tbody>

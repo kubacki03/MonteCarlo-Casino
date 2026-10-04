@@ -1,17 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-	public class Gra
+	public class Game
 	{
 		[Required]
-		public int IdGry { get; set; }
+		[Column("IdGry")]
+		public int GameId { get; set; }
 		[Required]
 		[MaxLength(150)]
 		[MinLength(2)]
-		public string Nazwa { get; set; }
+		[Column("Nazwa")]
+		public string Name { get; set; }
 		[Required]
-		public double MinStawka { get; set; }
-		public virtual ICollection<GraKonto>? GryKonta { get; set; }
+		[Column("MinStawka")]
+		public double MinStake { get; set; }
+		public virtual ICollection<GameAccount>? GameAccounts { get; set; }
 	}
 }

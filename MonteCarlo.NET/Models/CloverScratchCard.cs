@@ -1,53 +1,52 @@
 ﻿namespace MonteCarlo.NET.Models
 {
-    public class ZdrapkaKoniczynka
+    public class CloverScratchCard
     {
         public string[] Fields { get; set; }
-        public int WinningCombinationCount { get; set; } // Liczba koniczynek
+        public int WinningCombinationCount { get; set; }
         public bool IsGameOver { get; set; }
 
-        public int Wygrana { get; set; }
+        public int Prize { get; set; }
 
 
-        public ZdrapkaKoniczynka()
+        public CloverScratchCard()
         {
             Fields = new string[9];
             IsGameOver = false;
         }
 
-        public void InitGame()
+        public void InitGame(Random random)
         {
-            int ile = 0;
-            var random = new Random();
+            int cloverCount = 0;
             for (int i = 0; i < Fields.Length; i++)
             {
-                var szansa = random.Next(0, 10);
-                Fields[i] = szansa < 1 ? "clover" : "empty"; // 20% szans na koniczynkę
-                if (szansa < 1)
+                var chance = random.Next(0, 10);
+                Fields[i] = chance < 1 ? "clover" : "empty";
+                if (chance < 1)
                 {
-                    ile++;
+                    cloverCount++;
                 }
             }
             WinningCombinationCount = Fields.Count(f => f == "clover");
 
-            if (ile == 0)
+            if (cloverCount == 0)
             {
-                Wygrana = 20;
+                Prize = 20;
             }
             else
             {
-                Wygrana = random.Next(1, 10);
+                Prize = random.Next(1, 10);
             }
         }
 
         public bool CheckForWin()
         {
-            return WinningCombinationCount >= 3; // Sprawdzamy, czy mamy 3 koniczynki
+            return WinningCombinationCount >= 3;
         }
 
-        public void ResetGame()
+        public void ResetGame(Random random)
         {
-            InitGame();
+            InitGame(random);
             IsGameOver = false;
         }
     }

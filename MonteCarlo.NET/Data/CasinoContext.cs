@@ -5,72 +5,86 @@ using MonteCarlo.NET.Models;
 
 namespace MonteCarlo.NET.Data
 {
-    public class KasynoContext : IdentityDbContext<KontoUzytkownika>
+    public class CasinoContext : IdentityDbContext<UserAccount>
     {
-        public KasynoContext(DbContextOptions<KasynoContext> options) : base(options) { }
+        public CasinoContext(DbContextOptions<CasinoContext> options) : base(options) { }
 
-        public DbSet<Ban> Ban { get; set; }
-        public DbSet<Gra> Gra { get; set; }
-        public DbSet<GraKonto> GraKonto { get; set; }
-        public DbSet<KontoUzytkownika> KontoUzytkownika { get; set; }
-        public DbSet<Limit> Limit { get; set; }
-        public DbSet<Transakcja> Transakcja { get; set; }
-        public DbSet<Zgloszenie> Zgloszenie { get; set; }
-        public DbSet<Druzyna> Druzyna { get; set; }
-        public DbSet<Mecz> Mecz { get; set; }
-
-        // Dodane DbSet dla Zaklad
-        public DbSet<Zaklad> Zaklady { get; set; }
-
-        public DbSet<Level> Levele { get; set; }
+        public DbSet<Ban> Bans { get; set; }
+        public DbSet<Game> Games { get; set; }
+        public DbSet<GameAccount> GameAccounts { get; set; }
+        public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<Limit> Limits { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<Team> Teams { get; set; }
+        public DbSet<Match> Matches { get; set; }
+        public DbSet<Bet> Bets { get; set; }
+        public DbSet<Level> Levels { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Ban>().ToTable("Ban");
+            modelBuilder.Entity<Game>().ToTable("Gra");
+            modelBuilder.Entity<GameAccount>().ToTable("GraKonto");
+            modelBuilder.Entity<Limit>().ToTable("Limit");
+            modelBuilder.Entity<Transaction>().ToTable("Transakcja");
+            modelBuilder.Entity<Report>().ToTable("Zgloszenie");
+            modelBuilder.Entity<Team>().ToTable("Druzyna");
+            modelBuilder.Entity<Match>().ToTable("Mecz");
+            modelBuilder.Entity<Bet>().ToTable("Zaklady");
+            modelBuilder.Entity<Level>().ToTable("Levele");
+
+            modelBuilder.Entity<Match>()
+                .HasKey(m => m.MatchId);
+
+            modelBuilder.Entity<Team>()
+                .HasKey(t => t.TeamId);
+
             modelBuilder.Entity<Level>()
                 .HasKey(e => e.Id);
 
-            modelBuilder.Entity<GraKonto>()
-                .HasKey(gk => gk.IdGraKonto);
+            modelBuilder.Entity<GameAccount>()
+                .HasKey(gk => gk.GameAccountId);
 
-            modelBuilder.Entity<GraKonto>()
-                .HasOne(gk => gk.Gra)
-                .WithMany(g => g.GryKonta)
-                .HasForeignKey(gk => gk.IdGry);
+            modelBuilder.Entity<GameAccount>()
+                .HasOne(gk => gk.Game)
+                .WithMany(g => g.GameAccounts)
+                .HasForeignKey(gk => gk.GameId);
 
-            modelBuilder.Entity<GraKonto>()
-                .HasOne(gk => gk.KontoUzytkownika)
-                .WithMany(ku => ku.GryKonta)
-                .HasForeignKey(gk => gk.KontoUzytkownikaId);
+            modelBuilder.Entity<GameAccount>()
+                .HasOne(gk => gk.UserAccount)
+                .WithMany(ku => ku.GameAccounts)
+                .HasForeignKey(gk => gk.UserAccountId);
 
             modelBuilder.Entity<Ban>()
-                .HasKey(b => b.IdBana);
+                .HasKey(b => b.BanId);
 
-            modelBuilder.Entity<Gra>()
-                .HasKey(g => g.IdGry);
+            modelBuilder.Entity<Game>()
+                .HasKey(g => g.GameId);
 
             modelBuilder.Entity<Limit>()
-                .HasKey(l => l.IdLimitu);
+                .HasKey(l => l.LimitId);
 
-            modelBuilder.Entity<Transakcja>()
-                .HasKey(t => t.IdTransakcji);
+            modelBuilder.Entity<Transaction>()
+                .HasKey(t => t.TransactionId);
 
-            modelBuilder.Entity<Zgloszenie>()
-                .HasKey(z => z.IdZgloszenia);
+            modelBuilder.Entity<Report>()
+                .HasKey(z => z.ReportId);
 
-            modelBuilder.Entity<Zaklad>()
-           .HasKey(z => z.IdZakladu);
+            modelBuilder.Entity<Bet>()
+           .HasKey(z => z.BetId);
 
 
-            modelBuilder.Entity<Mecz>()
-                .HasOne(m => m.DruzynaHome)
+            modelBuilder.Entity<Match>()
+                .HasOne(m => m.HomeTeam)
                 .WithMany()
                 .HasForeignKey(m => m.HomeTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Mecz>()
-                .HasOne(m => m.DruzynaAway)
+            modelBuilder.Entity<Match>()
+                .HasOne(m => m.AwayTeam)
                 .WithMany()
                 .HasForeignKey(m => m.AwayTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -78,14 +92,14 @@ namespace MonteCarlo.NET.Data
             string adminRoleId = Guid.NewGuid().ToString();
             string adminUserId = Guid.NewGuid().ToString();
 
-            modelBuilder.Entity<Gra>().HasData(
-                new Gra { IdGry = 1, Nazwa = "Slotsy", MinStawka = 1 },
-                new Gra { IdGry = 2, Nazwa = "Zdrapka koniczynka", MinStawka = 1 },
-                new Gra { IdGry = 3, Nazwa = "Zdrapka Prosta", MinStawka = 1 },
-                new Gra { IdGry = 4, Nazwa = "Wyscigi Konne", MinStawka = 1 },
-                new Gra { IdGry = 5, Nazwa = "Obstawianie", MinStawka = 1 },
-                new Gra { IdGry = 6, Nazwa = "Ruletka", MinStawka = 1 },
-                new Gra { IdGry = 7, Nazwa = "Kosci", MinStawka = 1 }
+            modelBuilder.Entity<Game>().HasData(
+                new Game { GameId = 1, Name = "Slotsy", MinStake = 1 },
+                new Game { GameId = 2, Name = "Zdrapka koniczynka", MinStake = 1 },
+                new Game { GameId = 3, Name = "Zdrapka Prosta", MinStake = 1 },
+                new Game { GameId = 4, Name = "Wyscigi Konne", MinStake = 1 },
+                new Game { GameId = 5, Name = "Obstawianie", MinStake = 1 },
+                new Game { GameId = 6, Name = "Ruletka", MinStake = 1 },
+                new Game { GameId = 7, Name = "Kosci", MinStake = 1 }
             );
 
             modelBuilder.Entity<Level>().HasData(
@@ -98,11 +112,11 @@ namespace MonteCarlo.NET.Data
                 new Level { Id = 7, NumberOfLevel = 6, MinimumPlayedGames = 1000 }
             );
 
-            var adminUser = new KontoUzytkownika
+            var adminUser = new UserAccount
             {
                 Id = adminUserId,
-                Imie = "Admin",
-                Nazwisko = "Admin",
+                FirstName = "Admin",
+                LastName = "Admin",
                 UserName = "admin@gmail.com",
                 NormalizedUserName = "ADMIN@GMAIL.COM",
                 Email = "admin@gmail.com",
@@ -110,28 +124,28 @@ namespace MonteCarlo.NET.Data
                 EmailConfirmed = false,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 Level = 0,
-                Saldo = 0,
+                Balance = 0,
                 LockoutEnabled = true
             };
 
-            var hasher = new PasswordHasher<KontoUzytkownika>();
+            var hasher = new PasswordHasher<UserAccount>();
             adminUser.PasswordHash = hasher.HashPassword(adminUser, "Qwerty12#");
 
-            modelBuilder.Entity<KontoUzytkownika>().HasData(adminUser);
+            modelBuilder.Entity<UserAccount>().HasData(adminUser);
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = adminRoleId, Name = "Administrator", NormalizedName = "ADMINISTRATOR", ConcurrencyStamp = "asd1" });
 
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string> { UserId = adminUserId, RoleId = adminRoleId });
 
-            modelBuilder.Entity<Druzyna>().HasData(
-                new Druzyna { DruzynaId = 1, Name = "Olimpia .NeT", League = "Premier League" },
-                new Druzyna { DruzynaId = 2, Name = "Java FC", League = "Premier League" }
+            modelBuilder.Entity<Team>().HasData(
+                new Team { TeamId = 1, Name = "Olimpia .NeT", League = "Premier League" },
+                new Team { TeamId = 2, Name = "Java FC", League = "Premier League" }
             );
 
-            modelBuilder.Entity<Mecz>().HasData(
-                new Mecz { MeczId = 1, AwayTeamGoals = 2, AwayTeamId = 1, AwayTeamName = "Java FC", AwayTeamOdds = 2, data = DateOnly.Parse("02.02.2025"), HomeTeamGoals = 2, HomeTeamId = 2, HomeTeamName = "Olimpia .NeT", HomeTeamOdds = 3 },
-                new Mecz { MeczId = 2, AwayTeamGoals = 2, AwayTeamId = 1, AwayTeamName = "Java FC", AwayTeamOdds = 2, data = DateOnly.Parse("03.02.2025"), HomeTeamGoals = 2, HomeTeamId = 2, HomeTeamName = "Olimpia .NeT", HomeTeamOdds = 3 }
+            modelBuilder.Entity<Match>().HasData(
+                new Match { MatchId = 1, AwayTeamGoals = 2, AwayTeamId = 1, AwayTeamName = "Java FC", AwayTeamOdds = 2, Date = new DateOnly(2025, 2, 2), HomeTeamGoals = 2, HomeTeamId = 2, HomeTeamName = "Olimpia .NeT", HomeTeamOdds = 3 },
+                new Match { MatchId = 2, AwayTeamGoals = 2, AwayTeamId = 1, AwayTeamName = "Java FC", AwayTeamOdds = 2, Date = new DateOnly(2025, 2, 3), HomeTeamGoals = 2, HomeTeamId = 2, HomeTeamName = "Olimpia .NeT", HomeTeamOdds = 3 }
             );
         }       
     }

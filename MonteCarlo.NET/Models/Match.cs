@@ -1,18 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-    public class Mecz
+    public class Match
     {
         [Required]
-        public int MeczId { get; set; }
+        [Column("MeczId")]
+        public int MatchId { get; set; }
 
         [Required]
-        public DateOnly data { get; set; }
+        [Column("data")]
+        public DateOnly Date { get; set; }
 
         [Required]
-        public int HomeTeamId { get; set; }  // Change long to int
-        public virtual Druzyna DruzynaHome { get; set; }
+        public int HomeTeamId { get; set; }
+        public virtual Team HomeTeam { get; set; }
 
         [Required]
         public string HomeTeamName { get; set; }
@@ -21,8 +25,8 @@ namespace MonteCarlo.NET.Models
         public string AwayTeamName { get; set; }
 
         [Required]
-        public int AwayTeamId { get; set; }  // Change long to int
-        public virtual Druzyna DruzynaAway { get; set; }
+        public int AwayTeamId { get; set; }
+        public virtual Team AwayTeam { get; set; }
 
         
         public int HomeTeamGoals { get; set; }

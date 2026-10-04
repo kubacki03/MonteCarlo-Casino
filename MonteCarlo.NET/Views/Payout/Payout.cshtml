@@ -11,10 +11,10 @@
                 <form asp-controller="Payout" asp-action="CreatePayout" method="post">
                     <div class="form-group">
                         <label for="amount">Kwota (więcej niż 10 zł)</label>
-                        <input type="number" name="kwota" class="form-control" id="amount" min="10" required />
+                        <input type="number" name="amount" class="form-control" id="amount" min="10" required />
 
                         <label for="accountNumber">Podaj numer konta</label>
-                        <input type="text" name="numer" class="form-control" id="accountNumber" required maxlength="26" />
+                        <input type="text" name="accountNumber" class="form-control" id="accountNumber" required maxlength="26" />
                     </div>
 
 

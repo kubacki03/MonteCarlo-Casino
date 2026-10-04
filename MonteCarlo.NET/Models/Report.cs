@@ -1,26 +1,34 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-	public class Zgloszenie
+	public class Report
 	{
 		[Required]
-		public int IdZgloszenia { get; set; }
+		[Column("IdZgloszenia")]
+		public int ReportId { get; set; }
 		[Required]
-		public string KontoUzytkownikaId { get; set; }
-		public virtual KontoUzytkownika KontoUzytkownika { get; set; }
+		[Column("KontoUzytkownikaId")]
+		public string UserAccountId { get; set; }
+		public virtual UserAccount UserAccount { get; set; }
 		[Required]
 		[MaxLength(50)]
-		public string Tytul { get; set; }
+		[Column("Tytul")]
+		public string Title { get; set; }
 		[Required]
 		[MaxLength(250)]
-		public string Tresc { get; set; }
+		[Column("Tresc")]
+		public string Content { get; set; }
 		[Required]
-		public DateTime Data { get; set; }
+		[Column("Data")]
+		public DateTime Date { get; set; }
 		[Required]
 		[MaxLength(50)]
 		public string Status { get; set; }
 		[MaxLength(250)]
-		public string? Notatki { get; set; }
+		[Column("Notatki")]
+		public string? Notes { get; set; }
 	}
 }

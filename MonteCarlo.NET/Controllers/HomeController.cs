@@ -12,11 +12,11 @@ namespace MonteCarlo.NET.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<KontoUzytkownika> _userManager;
+        private readonly UserManager<UserAccount> _userManager;
         private readonly ILogger<HomeController> _logger;
-        private readonly SignInManager<KontoUzytkownika> _signInManager;
-        private readonly KasynoContext _context;
-        public HomeController(ILogger<HomeController> logger, UserManager<KontoUzytkownika> userManager, SignInManager<KontoUzytkownika> signInManager, KasynoContext context)
+        private readonly SignInManager<UserAccount> _signInManager;
+        private readonly CasinoContext _context;
+        public HomeController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, SignInManager<UserAccount> signInManager, CasinoContext context)
         {
             _logger = logger;
             _userManager = userManager;
@@ -28,21 +28,21 @@ namespace MonteCarlo.NET.Controllers
 
         [HttpGet]
         [Route("/getName")]
-        public async Task<String> getName()
+        public async Task<String> GetName()
         {
             var user = await _userManager.GetUserAsync(User);
 
-            return user.Imie;
+            return user.FirstName;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
         
 
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
 
@@ -55,7 +55,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View("Chatbot");
@@ -65,7 +65,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View();
@@ -73,17 +73,17 @@ namespace MonteCarlo.NET.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> SlotsyAsync()
+        public async Task<IActionResult> Slots()
         {
             var u = _userManager.GetUserId(User);
             var user = await _userManager.GetUserAsync(User);
             if (user != null) { 
-            ViewData["Saldo"] = user.Saldo;
+            ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
-            var graSlotsy = _context.Gra.FirstOrDefault(g => g.Nazwa == "Slotsy");
+            var slotsGame = _context.Games.FirstOrDefault(g => g.Name == "Slotsy");
 
-            return View(graSlotsy.MinStawka);
+            return View(slotsGame.MinStake);
         }
 
 
@@ -95,7 +95,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View();
@@ -105,64 +105,64 @@ namespace MonteCarlo.NET.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ZwrocWynik([FromBody] JsonElement dane)
+        public async Task<IActionResult> SubmitSlotsResult([FromBody] JsonElement payload)
         {
-            bool wygrana = dane.GetProperty("wygrana").GetBoolean();
-            double stawka = dane.GetProperty("stawka").GetDouble();
+            bool isWinner = payload.GetProperty("wygrana").GetBoolean();
+            double stake = payload.GetProperty("stawka").GetDouble();
 
             var user = await _userManager.GetUserAsync(User);
-            ViewData["Saldo"] = user.Saldo;
+            ViewData["Saldo"] = user.Balance;
             ViewData["Level"] = user.Level;
-            var sumaKwot = _context.GraKonto
-                .Where(g => g.KontoUzytkownikaId == user.Id && g.Czas.Date == DateTime.Now.Date)
-                .Sum(g => g.IlePostawiono);
+            var totalStaked = _context.GameAccounts
+                .Where(g => g.UserAccountId == user.Id && g.PlayedAt.Date == DateTime.Now.Date)
+                .Sum(g => g.AmountStaked);
 
-            var limit = _context.Limit
-                .Where(l => l.KontoUzytkownikaId == user.Id)
+            var limit = _context.Limits
+                .Where(l => l.UserAccountId == user.Id)
                 .AsEnumerable()
-                .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks))
+                .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
                 .FirstOrDefault();
 
-            if (sumaKwot == null)
+            if (totalStaked == null)
             {
-                sumaKwot = 0;
+                totalStaked = 0;
             }
 
-            var gra = _context.Gra.FirstOrDefault(g => (g.Nazwa == "Slotsy"));
+            var game = _context.Games.FirstOrDefault(g => (g.Name == "Slotsy"));
 
 
-            if (user.Saldo < gra.MinStawka || user.Saldo < stawka)
+            if (user.Balance < game.MinStake || user.Balance < stake)
             {
                 TempData["ErrorMessage"] = "Twoje saldo jest zbyt niskie, możesz grać ale nie będziesz w stanie nic wygrać.";
-                return RedirectToAction("SlotsyAsync");
+                return RedirectToAction("Slots");
             }
 
-            if (gra.MinStawka > stawka)
+            if (game.MinStake > stake)
             {
-                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {gra.MinStawka} BrigmaCoinsow";
-                return RedirectToAction("SlotsyAsync");
+                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {game.MinStake} BrigmaCoinsow";
+                return RedirectToAction("Slots");
             }
 
             if (limit != null)
             {
-                Console.WriteLine("Wydano " + sumaKwot);
-                if (sumaKwot + gra.MinStawka > limit.Kwota)
+                Console.WriteLine("Wydano " + totalStaked);
+                if (totalStaked + game.MinStake > limit.Amount)
                 {
                     TempData["ErrorMessage"] = "Przekroczono limit, możesz grać ale nie będziesz w stanie nic wygrać.";
-                    return RedirectToAction("SlotsyAsync");
+                    return RedirectToAction("Slots");
                 }
             }
-            user.Saldo -= stawka;
+            user.Balance -= stake;
 
-            double nagroda = 0;
-            if (wygrana)
+            double prize = 0;
+            if (isWinner)
             {
-                nagroda = 100 * stawka;
-                user.Saldo += nagroda;
+                prize = 100 * stake;
+                user.Balance += prize;
             }
-            var count = _context.GraKonto.Where(g => g.KontoUzytkownikaId == user.Id).ToList().Count;
+            var count = _context.GameAccounts.Where(g => g.UserAccountId == user.Id).ToList().Count;
 
-            var level = _context.Levele
+            var level = _context.Levels
      .Where(l => l.MinimumPlayedGames <= count)
      .OrderByDescending(l => l.MinimumPlayedGames)
      .FirstOrDefault();
@@ -174,18 +174,18 @@ namespace MonteCarlo.NET.Controllers
 
             }
 
-            GraKonto graKonto = new GraKonto()
+            GameAccount gameAccount = new GameAccount()
             {
-                KontoUzytkownikaId = user.Id,
-                IdGry = gra.IdGry,
-                IlePostawiono = stawka,
-                IleWygrano = nagroda,
-                Czas = DateTime.Now
+                UserAccountId = user.Id,
+                GameId = game.GameId,
+                AmountStaked = stake,
+                AmountWon = prize,
+                PlayedAt = DateTime.Now
             };
             try
             {
                 _context.Users.Update(user);
-                _context.GraKonto.Add(graKonto);
+                _context.GameAccounts.Add(gameAccount);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -197,67 +197,67 @@ namespace MonteCarlo.NET.Controllers
                 }
             }
 
-            return RedirectToAction("SlotsyAsync");
+            return RedirectToAction("Slots");
         }
 
         [Authorize]
         [HttpPost]
-        [Route("/RC/ZwrocWynikRuletka")]
-        public async Task<IActionResult> ZwrocWynikRuletka([FromBody] JsonElement dane)
+        [Route("/RC/SubmitRouletteResult")]
+        public async Task<IActionResult> SubmitRouletteResult([FromBody] JsonElement payload)
         {
-            bool wygrana = dane.GetProperty("isWinner").GetBoolean();
-            double stawka = dane.GetProperty("allBets").GetDouble();
-            double nagroda = dane.GetProperty("winnings").GetDouble();
+            bool isWinner = payload.GetProperty("isWinner").GetBoolean();
+            double stake = payload.GetProperty("allBets").GetDouble();
+            double prize = payload.GetProperty("winnings").GetDouble();
 
 
             var user = await _userManager.GetUserAsync(User);
-            ViewData["Saldo"] = user.Saldo;
+            ViewData["Saldo"] = user.Balance;
             ViewData["Level"] = user.Level;
-            var sumaKwot = _context.GraKonto
-                .Where(g => g.KontoUzytkownikaId == user.Id && g.Czas.Date == DateTime.Now.Date)
-                .Sum(g => g.IlePostawiono);
+            var totalStaked = _context.GameAccounts
+                .Where(g => g.UserAccountId == user.Id && g.PlayedAt.Date == DateTime.Now.Date)
+                .Sum(g => g.AmountStaked);
 
-            var limit = _context.Limit
-                .Where(l => l.KontoUzytkownikaId == user.Id)
+            var limit = _context.Limits
+                .Where(l => l.UserAccountId == user.Id)
                 .AsEnumerable()
-                .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks))
+                .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
                 .FirstOrDefault();
 
-            if (sumaKwot == null)
+            if (totalStaked == null)
             {
-                sumaKwot = 0;
+                totalStaked = 0;
             }
 
-            var gra = _context.Gra.FirstOrDefault(g => (g.Nazwa == "Ruletka"));
+            var game = _context.Games.FirstOrDefault(g => (g.Name == "Ruletka"));
 
 
-            if (user.Saldo < gra.MinStawka || user.Saldo < stawka)
+            if (user.Balance < game.MinStake || user.Balance < stake)
             {
                 TempData["ErrorMessage"] = "Twoje saldo jest zbyt niskie, możesz grać ale nie będziesz w stanie nic wygrać.";
-                return RedirectToAction("RuletkaAsync");
+                return RedirectToAction("Roulette");
             }
 
-            if (gra.MinStawka > stawka)
+            if (game.MinStake > stake)
             {
-                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {gra.MinStawka} BrigmaCoinsow";
-                return RedirectToAction("RuletkaAsync");
+                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {game.MinStake} BrigmaCoinsow";
+                return RedirectToAction("Roulette");
             }
 
             if (limit != null)
             {
-                Console.WriteLine("Wydano " + sumaKwot);
-                if (sumaKwot + gra.MinStawka > limit.Kwota)
+                Console.WriteLine("Wydano " + totalStaked);
+                if (totalStaked + game.MinStake > limit.Amount)
                 {
                     TempData["ErrorMessage"] = "Przekroczono limit, możesz grać ale nie będziesz w stanie nic wygrać.";
-                    return RedirectToAction("RuletkaAsync");
+                    return RedirectToAction("Roulette");
                 }
             }
-            user.Saldo -= stawka;
-            user.Saldo += nagroda;
+            user.Balance -= stake;
+            user.Balance += prize;
 
-            var count = _context.GraKonto.Where(g => g.KontoUzytkownikaId == user.Id).ToList().Count;
+            var count = _context.GameAccounts.Where(g => g.UserAccountId == user.Id).ToList().Count;
 
-            var level = _context.Levele
+            var level = _context.Levels
              .Where(l => l.MinimumPlayedGames <= count)
              .OrderByDescending(l => l.MinimumPlayedGames)
              .FirstOrDefault();
@@ -269,18 +269,18 @@ namespace MonteCarlo.NET.Controllers
 
             }
 
-            GraKonto graKonto = new GraKonto()
+            GameAccount gameAccount = new GameAccount()
             {
-                KontoUzytkownikaId = user.Id,
-                IdGry = gra.IdGry,
-                IlePostawiono = stawka,
-                IleWygrano = nagroda,
-                Czas = DateTime.Now
+                UserAccountId = user.Id,
+                GameId = game.GameId,
+                AmountStaked = stake,
+                AmountWon = prize,
+                PlayedAt = DateTime.Now
             };
             try
             {
                 _context.Users.Update(user);
-                _context.GraKonto.Add(graKonto);
+                _context.GameAccounts.Add(gameAccount);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -292,67 +292,67 @@ namespace MonteCarlo.NET.Controllers
                 }
             }
 
-            return RedirectToAction("RuletkaAsync");
+            return RedirectToAction("Roulette");
         }
 
         [Authorize]
         [HttpPost]
-        [Route("/RC/ZwrocWynikKosci")]
-        public async Task<IActionResult> ZwrocWynikKosci([FromBody] JsonElement dane)
+        [Route("/RC/SubmitDiceResult")]
+        public async Task<IActionResult> SubmitDiceResult([FromBody] JsonElement payload)
         {
-            bool wygrana = dane.GetProperty("isWinner").GetBoolean();
-            double stawka = dane.GetProperty("bet").GetDouble();
-            double nagroda = dane.GetProperty("ileWygrane").GetDouble();
+            bool isWinner = payload.GetProperty("isWinner").GetBoolean();
+            double stake = payload.GetProperty("bet").GetDouble();
+            double prize = payload.GetProperty("ileWygrane").GetDouble();
 
             var user = await _userManager.GetUserAsync(User);
-            ViewData["Saldo"] = user.Saldo;
+            ViewData["Saldo"] = user.Balance;
             ViewData["Level"] = user.Level;
-            var sumaKwot = _context.GraKonto
-                .Where(g => g.KontoUzytkownikaId == user.Id && g.Czas.Date == DateTime.Now.Date)
-                .Sum(g => g.IlePostawiono);
+            var totalStaked = _context.GameAccounts
+                .Where(g => g.UserAccountId == user.Id && g.PlayedAt.Date == DateTime.Now.Date)
+                .Sum(g => g.AmountStaked);
 
-            var limit = _context.Limit
-                .Where(l => l.KontoUzytkownikaId == user.Id)
+            var limit = _context.Limits
+                .Where(l => l.UserAccountId == user.Id)
                 .AsEnumerable()
-                .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks))
+                .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
                 .FirstOrDefault();
 
-            if (sumaKwot == null)
+            if (totalStaked == null)
             {
-                sumaKwot = 0;
+                totalStaked = 0;
             }
 
-            var gra = _context.Gra.FirstOrDefault(g => (g.Nazwa == "Kosci"));
+            var game = _context.Games.FirstOrDefault(g => (g.Name == "Kosci"));
 
 
-            if (user.Saldo < gra.MinStawka || user.Saldo < stawka)
+            if (user.Balance < game.MinStake || user.Balance < stake)
             {
                 TempData["ErrorMessage"] = "Twoje saldo jest zbyt niskie, możesz grać ale nie będziesz w stanie nic wygrać.";
-                return RedirectToAction("KosciAsync");
+                return RedirectToAction("Dice");
             }
 
-            if (gra.MinStawka > stawka)
+            if (game.MinStake > stake)
             {
-                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {gra.MinStawka} BrigmaCoinsow";
-                return RedirectToAction("KosciAsync");
+                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {game.MinStake} BrigmaCoinsow";
+                return RedirectToAction("Dice");
             }
 
             if (limit != null)
             {
-                Console.WriteLine("Wydano " + sumaKwot);
-                if (sumaKwot + gra.MinStawka > limit.Kwota)
+                Console.WriteLine("Wydano " + totalStaked);
+                if (totalStaked + game.MinStake > limit.Amount)
                 {
                     TempData["ErrorMessage"] = "Przekroczono limit, możesz grać ale nie będziesz w stanie nic wygrać.";
-                    return RedirectToAction("KosciAsync");
+                    return RedirectToAction("Dice");
                 }
             }
 
-            user.Saldo -= stawka;
-            user.Saldo += nagroda;
+            user.Balance -= stake;
+            user.Balance += prize;
 
-            var count = _context.GraKonto.Where(g => g.KontoUzytkownikaId == user.Id).ToList().Count;
+            var count = _context.GameAccounts.Where(g => g.UserAccountId == user.Id).ToList().Count;
 
-            var level = _context.Levele
+            var level = _context.Levels
              .Where(l => l.MinimumPlayedGames <= count)
              .OrderByDescending(l => l.MinimumPlayedGames)
              .FirstOrDefault();
@@ -364,18 +364,18 @@ namespace MonteCarlo.NET.Controllers
 
             }
 
-            GraKonto graKonto = new GraKonto()
+            GameAccount gameAccount = new GameAccount()
             {
-                KontoUzytkownikaId = user.Id,
-                IdGry = gra.IdGry,
-                IlePostawiono = stawka,
-                IleWygrano = nagroda,
-                Czas = DateTime.Now
+                UserAccountId = user.Id,
+                GameId = game.GameId,
+                AmountStaked = stake,
+                AmountWon = prize,
+                PlayedAt = DateTime.Now
             };
             try
             {
                 _context.Users.Update(user);
-                _context.GraKonto.Add(graKonto);
+                _context.GameAccounts.Add(gameAccount);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -387,11 +387,11 @@ namespace MonteCarlo.NET.Controllers
                 }
             }
 
-            if (wygrana)
+            if (isWinner)
             {
                 TempData["ErrorMessage"] = "Wygrane!";
             }
-            else if (nagroda == stawka)
+            else if (prize == stake)
             {
                 TempData["ErrorMessage"] = "Remis!";
             } else
@@ -399,53 +399,53 @@ namespace MonteCarlo.NET.Controllers
                 TempData["ErrorMessage"] = "Przegrane!";
             }
 
-            return RedirectToAction("KosciAsync");
+            return RedirectToAction("Dice");
         }
 
         [Authorize]
         [HttpPost]
         [Route("/RC/CheckBet")]
-        public async Task<IActionResult> CheckBet([FromBody] JsonElement dane)
+        public async Task<IActionResult> CheckBet([FromBody] JsonElement payload)
         {
-            double stawka = dane.GetProperty("betData").GetDouble();
+            double stake = payload.GetProperty("betData").GetDouble();
 
             var user = await _userManager.GetUserAsync(User);
-            ViewData["Saldo"] = user.Saldo;
+            ViewData["Saldo"] = user.Balance;
             ViewData["Level"] = user.Level;
-            var sumaKwot = _context.GraKonto
-                .Where(g => g.KontoUzytkownikaId == user.Id && g.Czas.Date == DateTime.Now.Date)
-                .Sum(g => g.IlePostawiono);
+            var totalStaked = _context.GameAccounts
+                .Where(g => g.UserAccountId == user.Id && g.PlayedAt.Date == DateTime.Now.Date)
+                .Sum(g => g.AmountStaked);
 
-            var limit = _context.Limit
-                .Where(l => l.KontoUzytkownikaId == user.Id)
+            var limit = _context.Limits
+                .Where(l => l.UserAccountId == user.Id)
                 .AsEnumerable()
-                .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks))
+                .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
                 .FirstOrDefault();
 
-            if (sumaKwot == null)
+            if (totalStaked == null)
             {
-                sumaKwot = 0;
+                totalStaked = 0;
             }
 
-            var gra = _context.Gra.FirstOrDefault(g => (g.Nazwa == "Kosci"));
+            var game = _context.Games.FirstOrDefault(g => (g.Name == "Kosci"));
 
 
-            if (user.Saldo < gra.MinStawka || user.Saldo < stawka)
+            if (user.Balance < game.MinStake || user.Balance < stake)
             {
                 TempData["ErrorMessage"] = "Twoje saldo jest zbyt niskie, możesz grać ale nie będziesz w stanie nic wygrać.";
                 return Json(false);
             }
 
-            if (gra.MinStawka > stawka)
+            if (game.MinStake > stake)
             {
-                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {gra.MinStawka} BrigmaCoinsow";
+                TempData["ErrorMessage"] = $"Jeśli chcesz grać za brigmaCoinsy musisz grać za co najmniej {game.MinStake} BrigmaCoinsow";
                 return Json(false);
             }
 
             if (limit != null)
             {
-                Console.WriteLine("Wydano " + sumaKwot);
-                if (sumaKwot + gra.MinStawka > limit.Kwota)
+                Console.WriteLine("Wydano " + totalStaked);
+                if (totalStaked + game.MinStake > limit.Amount)
                 {
                     TempData["ErrorMessage"] = "Przekroczono limit, możesz grać ale nie będziesz w stanie nic wygrać.";
                     return Json(false);
@@ -457,12 +457,12 @@ namespace MonteCarlo.NET.Controllers
         
 
         [Authorize]
-        public async Task<IActionResult> Kosci()
+        public async Task<IActionResult> Dice()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View();
@@ -475,72 +475,72 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
 
 
-            var mostFrequentUserId = _context.GraKonto
-     .GroupBy(g => g.KontoUzytkownikaId)
+            var mostFrequentUserId = _context.GameAccounts
+     .GroupBy(g => g.UserAccountId)
      .OrderByDescending(group => group.Count())
      .Select(group => group.Key)
      .FirstOrDefault();
 
 
-            var count = _context.GraKonto.Where(g => g.KontoUzytkownikaId == user.Id).ToList().Count;
+            var count = _context.GameAccounts.Where(g => g.UserAccountId == user.Id).ToList().Count;
 
-            var level = _context.Levele
+            var level = _context.Levels
      .Where(l => l.MinimumPlayedGames <= count)
      .OrderByDescending(l => l.MinimumPlayedGames)
      .FirstOrDefault();
 
-            var nextLevel = _context.Levele.FirstOrDefault(g => g.NumberOfLevel == level.NumberOfLevel + 1);
+            var nextLevel = _context.Levels.FirstOrDefault(g => g.NumberOfLevel == level.NumberOfLevel + 1);
 
             var diff = nextLevel.MinimumPlayedGames - count;
-            var bestUser = _context.KontoUzytkownika.FirstOrDefault(g => g.Id.Equals(mostFrequentUserId));
+            var bestUser = _context.UserAccounts.FirstOrDefault(g => g.Id.Equals(mostFrequentUserId));
             ViewData["ToNextLevel"] = diff;
             ViewData["BestPlayer"] = bestUser.UserName;
 
-            var levelList = _context.Levele.ToList();
+            var levelList = _context.Levels.ToList();
 
             return View(levelList);
         }
 
         [Authorize]
-        public async Task<IActionResult> ZdrapkiAsync()
+        public async Task<IActionResult> ScratchCards()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
 
-            ViewData["Zdrapka Prosta"] =  _context.Gra.FirstOrDefault(g => (g.Nazwa == "Zdrapka Prosta")).MinStawka;
+            ViewData["Zdrapka Prosta"] =  _context.Games.FirstOrDefault(g => (g.Name == "Zdrapka Prosta")).MinStake;
         
-            ViewData["Zdrapka Koniczynka"] = _context.Gra.FirstOrDefault(g => (g.Nazwa == "Zdrapka Koniczynka")).MinStawka;
+            ViewData["Zdrapka Koniczynka"] = _context.Games.FirstOrDefault(g => (g.Name == "Zdrapka Koniczynka")).MinStake;
             return View();
         }
 
         [Authorize]
-        public async Task<IActionResult> PaymentAsync()
+        public async Task<IActionResult> Payment()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View();
         }
 
         [Authorize]
-        public async Task<IActionResult> Ruletka()
+        public async Task<IActionResult> Roulette()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             return View();
@@ -552,7 +552,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
 
@@ -564,7 +564,7 @@ namespace MonteCarlo.NET.Controllers
                 return RedirectToAction("Login");
             }
 
-            var transactionList = _context.Transakcja.Where(t => (t.KontoUzytkownikaId.Equals(user.Id))).ToList();    
+            var transactionList = _context.Transactions.Where(t => (t.UserAccountId.Equals(user.Id))).ToList();    
 
             return View(transactionList);
         }
@@ -580,7 +580,6 @@ namespace MonteCarlo.NET.Controllers
 
         public IActionResult CustomError()
         {
-            // Możesz dodać dodatkowe informacje o błędzie w ViewData lub ViewBag
             return View("CustomError");
         }
 
@@ -596,9 +595,9 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
            
 
-            var count= _context.GraKonto.Where(g => g.KontoUzytkownikaId == user.Id).ToList().Count;
+            var count= _context.GameAccounts.Where(g => g.UserAccountId == user.Id).ToList().Count;
 
-            var level = _context.Levele
+            var level = _context.Levels
      .Where(l => l.MinimumPlayedGames <= count)
      .OrderByDescending(l => l.MinimumPlayedGames) 
      .FirstOrDefault();

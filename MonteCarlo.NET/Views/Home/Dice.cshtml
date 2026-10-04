@@ -121,7 +121,6 @@
             <div class="table-container">
                 <table>
                     <tbody id="scoreTableBody">
-                        <!--dynamiczne, zobacz createScoreButtons()-->
                     </tbody>
                 </table>
             </div>
@@ -196,7 +195,7 @@
                 numberInput.disabled = true;
                 rollButton.disabled = false;
             } else {
-                window.location.href = "/Home/Kosci";
+                window.location.href = "/Home/Dice";
             }
         }
 
@@ -282,7 +281,7 @@
 
             console.log('Sending POST request with data:', JSON.stringify(data));
 
-            fetch('/RC/ZwrocWynikKosci', {
+            fetch('/RC/SubmitDiceResult', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -299,7 +298,7 @@
 
             setTimeout(() => {
                 console.log("Przekierowanie po 3 sekundach...");
-                window.location.href = "/Home/Kosci";
+                window.location.href = "/Home/Dice";
             }, 3000);
         }
 

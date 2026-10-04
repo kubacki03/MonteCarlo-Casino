@@ -1,4 +1,4 @@
-﻿  @model ZdrapkaKoniczynka
+﻿  @model CloverScratchCard
 
 <!DOCTYPE html>
 <html lang="en">
@@ -190,7 +190,7 @@
         const rewardCtx = rewardCanvas.getContext('2d');
 
         
-        const reward = @Html.Raw(Json.Serialize(Model.Wygrana)); 
+        const reward = @Html.Raw(Json.Serialize(Model.Prize)); 
 
         let rewardRevealed = false;
 

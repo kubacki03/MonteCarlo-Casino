@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace test.Views.Game
+namespace MonteCarlo.NET.Views.CloverScratchCard
 {
     public class IndexModel : PageModel
     {

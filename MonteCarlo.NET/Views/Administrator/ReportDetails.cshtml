@@ -3,28 +3,28 @@
 <div class="card mb-4 bg-dark">
     <div class="card-header">
         <h5>
-            <strong>Tytuł:</strong> @Model.Tytul
+            <strong>Tytuł:</strong> @Model.Title
         </h5>
     </div>
     <div class="card-body">
         <p class="card-text">
-            <strong>Treść:</strong> @Model.Tresc
+            <strong>Treść:</strong> @Model.Content
         </p>
         <p class="card-text">
-            <strong>Data:</strong> @Model.Data.ToString("dd.MM.yyyy")
+            <strong>Data:</strong> @Model.Date.ToString("dd.MM.yyyy")
         </p>
         <p class="card-text">
             <strong>Status:</strong> 
-            <form asp-controller="Administrator" asp-action="ZmienStatus" method="post">
-                <input type="hidden" name="zgloszenieId" value="@Model.IdZgloszenia" />
+            <form asp-controller="Administrator" asp-action="ChangeStatus" method="post">
+                <input type="hidden" name="reportId" value="@Model.ReportId" />
                 <div class="btn-group">
-                    <input type="radio" class="btn-check" name="nowyStatus" id="nowe" value="Nowe" @(Model.Status == "Nowe" ? "checked" : "")>
+                    <input type="radio" class="btn-check" name="newStatus" id="nowe" value="Nowe" @(Model.Status == "Nowe" ? "checked" : "")>
                     <label class="btn btn-outline-primary" for="nowe">Nowe</label>
 
-                    <input type="radio" class="btn-check" name="nowyStatus" id="wToku" value="W toku" @(Model.Status == "W toku" ? "checked" : "")>
+                    <input type="radio" class="btn-check" name="newStatus" id="wToku" value="W toku" @(Model.Status == "W toku" ? "checked" : "")>
                     <label class="btn btn-outline-warning" for="wToku">W toku</label>
 
-                    <input type="radio" class="btn-check" name="nowyStatus" id="zrobione" value="Zrobione" @(Model.Status == "Zrobione" ? "checked" : "")>
+                    <input type="radio" class="btn-check" name="newStatus" id="zrobione" value="Zrobione" @(Model.Status == "Zrobione" ? "checked" : "")>
                     <label class="btn btn-outline-success" for="zrobione">Zrobione</label>
                     
                 </div>
@@ -33,10 +33,10 @@
 
             </form>
         </p>
-        @if (!string.IsNullOrEmpty(Model.Notatki))
+        @if (!string.IsNullOrEmpty(Model.Notes))
         {
             <p class="card-text">
-                <strong>Notatki:</strong> @Model.Notatki
+                <strong>Notatki:</strong> @Model.Notes
             </p>
         }
         else

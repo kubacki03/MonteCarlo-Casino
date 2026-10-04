@@ -1,8 +1,8 @@
-﻿@model List<KontoUzytkownika>
+﻿@model List<UserAccount>
 <h1>Dane Użytkowników</h1>
 
 <div class="row">
-	<form method="get" asp-controller="Administrator" asp-action="Uzytkownik">
+	<form method="get" asp-controller="Administrator" asp-action="Users">
 		<div class="form-group w-50">
 			<label for="opcjaSort">Wybierz opcje sortowania</label>
 			@if (ViewBag.SelectedOption != null)
@@ -11,11 +11,11 @@
 					@ViewBag.SelectedOption
 				</div>
 			}
-			<select name="opcjaSort" id="opcjaSort" class="form-control">
+			<select name="sortOption" id="opcjaSort" class="form-control">
 				<option value="" selected disabled>Wybierz opcję sortowania</option>
-				@foreach (var opcja in ViewBag.opcjeSortowaniaUzytkownika)
+				@foreach (var option in ViewBag.userSortOptions)
 				{
-					<option value="@opcja">@opcja</option>
+					<option value="@option">@option</option>
 				}
 			</select>
 		</div>
@@ -44,20 +44,20 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var uzytkownik in Model)
+		@foreach (var user in Model)
 		{
 			<tr>
-				<td>@uzytkownik.UserName</td>
-				<td>@uzytkownik.Nazwisko</td>
-				<td>@uzytkownik.Imie</td>
-				<td>@uzytkownik.Saldo</td>
-				<td>@uzytkownik.Level</td>
-				<td>@uzytkownik.LockoutEnd?.ToString("dd.MM.yyyy HH:mm:ss")</td>
+				<td>@user.UserName</td>
+				<td>@user.LastName</td>
+				<td>@user.FirstName</td>
+				<td>@user.Balance</td>
+				<td>@user.Level</td>
+				<td>@user.LockoutEnd?.ToString("dd.MM.yyyy HH:mm:ss")</td>
 				<td>
-					<form asp-controller="Administrator" asp-action="FormularzPrzekazanieId" method="post">
-						<input type="hidden" id="poleUzytkownikId" name="uzytkownikId" value="@uzytkownik.Id" />
+					<form asp-controller="Administrator" asp-action="SelectUserForBan" method="post">
+						<input type="hidden" id="poleUzytkownikId" name="userId" value="@user.Id" />
 
-						@if (uzytkownik.LockoutEnabled)
+						@if (user.LockoutEnabled)
 						{
 							<button type="submit" class="btn btn-danger">Zbanuj</button>
 						}

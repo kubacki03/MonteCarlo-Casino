@@ -6,13 +6,13 @@ using MonteCarlo.NET.Models;
 
 namespace MonteCarlo.NET.Controllers
 {
-    public class ZgloszenieController : Controller
+    public class ReportController : Controller
     {
-        private readonly UserManager<KontoUzytkownika> _userManager;
+        private readonly UserManager<UserAccount> _userManager;
         private readonly ILogger<HomeController> _logger;
-        private readonly KasynoContext _context;
-        private readonly SignInManager<KontoUzytkownika> _signInManager;
-        public ZgloszenieController(ILogger<HomeController> logger, UserManager<KontoUzytkownika> userManager, KasynoContext context, SignInManager<KontoUzytkownika> signInManager)
+        private readonly CasinoContext _context;
+        private readonly SignInManager<UserAccount> _signInManager;
+        public ReportController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context, SignInManager<UserAccount> signInManager)
         {
             _logger = logger;
             _userManager = userManager;
@@ -21,33 +21,33 @@ namespace MonteCarlo.NET.Controllers
         }
 
         [Authorize]
-        public IActionResult FormularzZgloszenie()
+        public IActionResult ReportForm()
         {
             return View();
         }
 
         [Authorize]
-        public async Task<IActionResult> WyslijZgloszenie(FormularzZgloszenie formularzZgloszenie)
+        public async Task<IActionResult> SubmitReport(ReportFormViewModel form)
         {
             var user = await _userManager.GetUserAsync(User);
 
             if (ModelState.IsValid)
             {
-                Zgloszenie zgloszenie = new Zgloszenie()
+                Report report = new Report()
                 {
-                    KontoUzytkownikaId = user.Id,
-                    Tytul = formularzZgloszenie.Tytul,
-                    Tresc = formularzZgloszenie.Tresc,
-                    Notatki = formularzZgloszenie.Notatki,
-                    Data = DateTime.Now,
+                    UserAccountId = user.Id,
+                    Title = form.Title,
+                    Content = form.Content,
+                    Notes = form.Notes,
+                    Date = DateTime.Now,
                     Status = "Nowe"
                 };
-                _context.Zgloszenie.Add(zgloszenie);
+                _context.Reports.Add(report);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Home");
             }
 
-            return View("FormularzZgloszenie", formularzZgloszenie);
+            return View("ReportForm", form);
 
         }
     }

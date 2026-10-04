@@ -1,22 +1,22 @@
-﻿@model List<UzytkownikZgloszenie>
+﻿@model List<UserReport>
 
 <h1>Historia zgłoszeń</h1>
 
 <div class="row">
-	<form method="get" asp-controller="Administrator" asp-action="Zgloszenie">
+	<form method="get" asp-controller="Administrator" asp-action="Reports">
 		<div class="form-group w-50">
 			<label for="opcjaSort">Wybierz opcje sortowania</label>
-			@if (ViewBag.SelectedOptionZgloszenie != null)
+			@if (ViewBag.SelectedReportOption != null)
 			{
 				<div class="alert alert-info">
-					@ViewBag.SelectedOptionZgloszenie
+					@ViewBag.SelectedReportOption
 				</div>
 			}
-			<select name="opcjaSort" id="opcjaSortZgloszenie" class="form-control">
+			<select name="sortOption" id="opcjaSortZgloszenie" class="form-control">
 				<option value="" selected disabled>Wybierz opcję sortowania</option>
-				@foreach (var opcja in ViewBag.opcjeSortowaniaZgloszenie)
+				@foreach (var option in ViewBag.reportSortOptions)
 				{
-					<option value="@opcja">@opcja</option>
+					<option value="@option">@option</option>
 				}
 			</select>
 		</div>
@@ -43,18 +43,18 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var zgloszenie in Model)
+		@foreach (var report in Model)
 		{
 			<tr>
-				<td>@zgloszenie.NazwaUzytkownika</td>
-				<td>@zgloszenie.Nazwisko</td>
-				<td>@zgloszenie.Imie</td>
-				<td>@zgloszenie.Data.ToString("dd.MM.yyyy")</td>
-				<td>@zgloszenie.Status</td>
-				<td>@zgloszenie.Tytul</td>
+				<td>@report.UserName</td>
+				<td>@report.LastName</td>
+				<td>@report.FirstName</td>
+				<td>@report.Date.ToString("dd.MM.yyyy")</td>
+				<td>@report.Status</td>
+				<td>@report.Title</td>
 				<td>
-					<form asp-controller="Administrator" asp-action="SzczegolyZgloszenia" method="post">
-						<input type="hidden" id="poleZgloszenieId" name="zgloszenieId" value="@zgloszenie.IdZgloszenia" />
+					<form asp-controller="Administrator" asp-action="ReportDetails" method="post">
+						<input type="hidden" id="poleZgloszenieId" name="reportId" value="@report.ReportId" />
 						<button type="submit" class="btn btn-info">Szczegóły</button>
 					</form>
 				</td>

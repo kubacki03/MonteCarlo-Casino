@@ -1,7 +1,6 @@
 ﻿@model BetViewModel
 @{
     ViewBag.Title = "Wyniki Wyścigu - Symulacja";
-    // Mapa koloru tekstowego na CSS:
     Dictionary<string, string> colorMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         { "Brąz", "#8B4513" },
@@ -41,9 +40,7 @@
         top: 10px;
         width: 50px;
         height: 30px;
-        /* Tło będzie kolorem konia. Sprite to maska, dzięki czemu koń będzie w danym kolorze */
         background-color: #7cfc00;
-        /* Maskowanie konia */
         -webkit-mask-image: url('@Url.Content("~/Resources/konik.png")');
         -webkit-mask-size: contain;
         -webkit-mask-repeat: no-repeat;
@@ -55,7 +52,7 @@
     }
 
     .horse-name {
-        margin-left: 60px; /* aby nazwa była obok konia */
+        margin-left: 60px;
         font-weight: bold;
         font-size: 14px;
     }
@@ -71,15 +68,15 @@
 </style>
 
 <div class="race-track" id="raceTrack">
-    @if (Model.WynikiKoni != null && Model.WynikiKoni.Count > 0)
+    @if (Model.HorseResults != null && Model.HorseResults.Count > 0)
     {
         int laneNumber = 0;
-        foreach (var horseResult in Model.WynikiKoni)
+        foreach (var horseResult in Model.HorseResults)
         {
-            var cssColor = colorMap.ContainsKey(horseResult.Kolor) ? colorMap[horseResult.Kolor] : "#7cfc00";
-            <div class="horse-lane" data-horse="@horseResult.KonImie" data-time="@horseResult.Czas" data-index="@laneNumber">
+            var cssColor = colorMap.ContainsKey(horseResult.Color) ? colorMap[horseResult.Color] : "#7cfc00";
+            <div class="horse-lane" data-horse="@horseResult.HorseName" data-time="@horseResult.Time" data-index="@laneNumber">
                 <div class="horse" style="background-color:@cssColor"></div>
-                <div class="horse-name">@horseResult.KonImie</div>
+                <div class="horse-name">@horseResult.HorseName</div>
             </div>
             laneNumber++;
         }
@@ -91,11 +88,10 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // Symulacja wyścigu z dokładnym czasem
     $(function () {
         var $lanes = $('.horse-lane');
         var trackWidth = $('#raceTrack').width();
-        var finishLineX = trackWidth - 60; // miejsce docelowe
+        var finishLineX = trackWidth - 60;
 
         $('#startRaceBtn').click(function () {
             $(this).prop('disabled', true);
@@ -104,53 +100,48 @@
 
             $lanes.each(function () {
                 var $lane = $(this);
-                var horseTime = parseFloat($lane.attr('data-time')); // Czas końcowy dla konia
+                var horseTime = parseFloat($lane.attr('data-time'));
                 var $horse = $lane.find('.horse');
                 var laneIndex = $lane.attr('data-index');
-                var $horseTimeDisplay = $(`#horse-time-${laneIndex}`); // Element wyświetlający czas
+                var $horseTimeDisplay = $(`#horse-time-${laneIndex}`);
 
-                // Czas w sekundach -> milisekundy
                 var animationDuration = horseTime * 1000;
                 if (animationDuration > longestAnimation) {
                     longestAnimation = animationDuration;
                 }
 
-                // Dynamiczna animacja z przyspieszeniami/spowolnieniami
                 var startTime = Date.now();
                 var interval = setInterval(() => {
                     var elapsedTime = (Date.now() - startTime) / 1000;
 
                     if (elapsedTime >= horseTime) {
                         elapsedTime = horseTime;
-                        clearInterval(interval); // Zatrzymaj aktualizację
+                        clearInterval(interval);
                     }
 
-                    // Dynamiczne zmiany prędkości (przyspieszenia/spowolnienia)
-                    var randomFactor = 1 + (Math.random() - 0.5) * 0.2; // Od -10% do +10% zmiany prędkości
-                    var currentPosition = (elapsedTime / horseTime) * 100 * randomFactor; // Pozycja jako % trasy
+                    var randomFactor = 1 + (Math.random() - 0.5) * 0.2;
+                    var currentPosition = (elapsedTime / horseTime) * 100 * randomFactor;
 
                     if (currentPosition > 100) {
-                        currentPosition = 100; // Zapewnij, że koń nie przekroczy mety
+                        currentPosition = 100;
                     }
 
-                    $horse.css('left', currentPosition + '%'); // Aktualizuj pozycję wizualną konia
-                    $horseTimeDisplay.text(elapsedTime.toFixed(2)); // Aktualizuj wyświetlany czas
+                    $horse.css('left', currentPosition + '%');
+                    $horseTimeDisplay.text(elapsedTime.toFixed(2));
                 }, 100);
 
-                // Ustaw końcową animację (zgodną z czasem rzeczywistym)
                 $horse.animate({ left: '100%' }, animationDuration);
             });
 
 
-            // Po zakończeniu najdłuższej animacji pokazujemy finalne wyniki
             setTimeout(showFinalResults, longestAnimation + 1000);
         });
 
         function showFinalResults() {
-            var zwyciezca = "@Model.Zwyciezca";
-            var wybranyKon = "@Model.WybranyKon";
-            var wygrana = @Model.Wygrana.ToString().ToLower();
-            var wygranaKwota = @Model.WygranaKwota;
+            var zwyciezca = "@Model.Winner";
+            var wybranyKon = "@Model.SelectedHorse";
+            var wygrana = @Model.IsWinner.ToString().ToLower();
+            var wygranaKwota = @Model.WinAmount;
 
             var resultMessage = "<h3>Zwyciężył koń: <strong>" + zwyciezca + "</strong></h3>";
             if (wygrana) {
@@ -163,7 +154,7 @@
             $('#raceTrack').after(resultMessage);
             $('#startRaceBtn').text("Powrót do obstawiania").removeAttr('disabled')
                               .off('click')
-                              .click(function(){ window.location.href='@Url.Action("KonieMenu", "Konie")'; });
+                              .click(function(){ window.location.href='@Url.Action("Index", "HorseRace")'; });
         }
     });
 </script>

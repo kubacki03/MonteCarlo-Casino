@@ -8,15 +8,15 @@ namespace MonteCarlo.NET.Controllers.Administrator
 {
     public class AdministratorController : Controller
     {
-        private readonly KasynoContext _context;
-        public AdministratorController(KasynoContext context)
+        private readonly CasinoContext _context;
+        public AdministratorController(CasinoContext context)
         {
             this._context = context;
         }
 		[Authorize(Roles = "Administrator")]
-        public IActionResult Uzytkownik(string? opcjaSort, string? searchText)
+        public IActionResult Users(string? sortOption, string? searchText)
         {
-            string[] opcjeSortowaniaUzytkownika = new string[]
+            string[] userSortOptions = new string[]
             {
                 "Domyślnie",
                 "Nazwa użytkownika (A-Z)",
@@ -32,124 +32,124 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Data końca banu rosnąco",
                 "Data końca banu malejąco"
             };
-            ViewBag.opcjeSortowaniaUzytkownika = opcjeSortowaniaUzytkownika;
-			ViewBag.SelectedOption = opcjaSort;
+            ViewBag.userSortOptions = userSortOptions;
+			ViewBag.SelectedOption = sortOption;
 
-			IQueryable<KontoUzytkownika> uzytkownicyQuery = _context.KontoUzytkownika;
+			IQueryable<UserAccount> usersQuery = _context.UserAccounts;
 
 			
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				uzytkownicyQuery = uzytkownicyQuery.Where(u => u.UserName.Contains(searchText) || u.Imie.Contains(searchText) || u.Nazwisko.Contains(searchText) || u.Saldo.ToString().Contains(searchText) || u.Level.ToString().Contains(searchText) || u.LockoutEnd.ToString().Contains(searchText));
+				usersQuery = usersQuery.Where(u => u.UserName.Contains(searchText) || u.FirstName.Contains(searchText) || u.LastName.Contains(searchText) || u.Balance.ToString().Contains(searchText) || u.Level.ToString().Contains(searchText) || u.LockoutEnd.ToString().Contains(searchText));
 			}
 
 			
-			switch (opcjaSort)
+			switch (sortOption)
             {
                 case "Nazwa użytkownika (A-Z)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.UserName);
+					usersQuery = usersQuery.OrderBy(nu => nu.UserName);
                     break;
                 case "Nazwa użytkownika (Z-A)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.UserName);
+					usersQuery = usersQuery.OrderByDescending(nu => nu.UserName);
                     break;
                 case "Imie (A-Z)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.Imie);
+					usersQuery = usersQuery.OrderBy(nu => nu.FirstName);
                     break;
                 case "Imie (Z-A)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.Imie);
+					usersQuery = usersQuery.OrderByDescending(nu => nu.FirstName);
                     break;
                 case "Nazwisko (A-Z)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.Nazwisko);
+					usersQuery = usersQuery.OrderBy(nu => nu.LastName);
                     break;
                 case "Nazwisko (Z-A)":
-					uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.Nazwisko);
+					usersQuery = usersQuery.OrderByDescending(nu => nu.LastName);
                     break;
                 case "Level rosnąco":
-					uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.Level);
+					usersQuery = usersQuery.OrderBy(nu => nu.Level);
                     break;
                 case "Level malejąco":
-					uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.Level);
+					usersQuery = usersQuery.OrderByDescending(nu => nu.Level);
                     break;
                 case "Saldo rosnąco":
-					uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.Saldo);
+					usersQuery = usersQuery.OrderBy(nu => nu.Balance);
                     break;
                 case "Saldo malejąco":
-					uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.Saldo);
+					usersQuery = usersQuery.OrderByDescending(nu => nu.Balance);
                     break;
 				case "Data końca banu rosnąco":
-                    uzytkownicyQuery = uzytkownicyQuery.OrderBy(nu => nu.LockoutEnd);
+                    usersQuery = usersQuery.OrderBy(nu => nu.LockoutEnd);
                     break;
 				case "Data końca banu malejąco":
-                    uzytkownicyQuery = uzytkownicyQuery.OrderByDescending(nu => nu.LockoutEnd);
+                    usersQuery = usersQuery.OrderByDescending(nu => nu.LockoutEnd);
                     break;
                 default:
                     break;
 			}
 
 			
-			List<KontoUzytkownika> uzytkownicy = uzytkownicyQuery.ToList();
+			List<UserAccount> users = usersQuery.ToList();
 
-			return View(uzytkownicy);
+			return View(users);
         }
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult FormularzPrzekazanieId(string uzytkownikId)
+        public IActionResult SelectUserForBan(string userId)
 		{
 			HttpContext.Session.Remove("IdUzytkownika");
-			HttpContext.Session.SetString("IdUzytkownika", uzytkownikId);
+			HttpContext.Session.SetString("IdUzytkownika", userId);
 
-            return RedirectToAction("FormularzBan"); 
+            return RedirectToAction("BanForm"); 
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult FormularzBan(FormularzBan? daneBan)
+        public IActionResult BanForm(BanFormViewModel? banForm)
 		{
 
-			var uzytkownikId = HttpContext.Session.GetString("IdUzytkownika");
-			var uzytkownik = _context.KontoUzytkownika.FirstOrDefault(u => u.Id == uzytkownikId);
+			var userId = HttpContext.Session.GetString("IdUzytkownika");
+			var user = _context.UserAccounts.FirstOrDefault(u => u.Id == userId);
 
 			
-			if (uzytkownik != null)
+			if (user != null)
 			{
-				if (uzytkownik.LockoutEnabled)
+				if (user.LockoutEnabled)
 				{
                     
                     if (ModelState.IsValid)
 					{
                         Ban ban = new Ban()
                         {
-                            Data = daneBan.Data,
-                            Dlugosc = daneBan.Dlugosc,
-                            Przyczyna = daneBan.Przyczyna,
-                            KontoUzytkownikaId = uzytkownik.Id
+                            Date = banForm.Date,
+                            DurationDays = banForm.DurationDays,
+                            Reason = banForm.Reason,
+                            UserAccountId = user.Id
                         };
-                        _context.Ban.Add(ban);
-						uzytkownik.LockoutEnabled = false;
-						uzytkownik.LockoutEnd = ban.Data.AddDays(ban.Dlugosc);
+                        _context.Bans.Add(ban);
+						user.LockoutEnabled = false;
+						user.LockoutEnd = ban.Date.AddDays(ban.DurationDays);
 
-						_context.Update(uzytkownik);
+						_context.Update(user);
 						_context.SaveChanges();
-						return RedirectToAction("Uzytkownik");
+						return RedirectToAction("Users");
 					}
-					return View(daneBan);
+					return View(banForm);
 				}
 				else
 				{
-					uzytkownik.LockoutEnabled = true;
-					uzytkownik.LockoutEnd = null;
-					_context.Update(uzytkownik);
+					user.LockoutEnabled = true;
+					user.LockoutEnd = null;
+					_context.Update(user);
 					_context.SaveChanges();
 				}
 			}
 
 
-			return RedirectToAction("Uzytkownik");
+			return RedirectToAction("Users");
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult Ban(string? opcjaSort, string? searchText)
+        public IActionResult Ban(string? sortOption, string? searchText)
 		{
-			string[] opcjeSortowaniaBanow = new string[]
+			string[] banSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa użytkownika (A-Z)",
@@ -166,81 +166,81 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Przyczyna (Z-A)"
 
 			};
-			ViewBag.opcjeSortowaniaBanow = opcjeSortowaniaBanow;
-			ViewBag.SelectedOptionBan = opcjaSort;
+			ViewBag.banSortOptions = banSortOptions;
+			ViewBag.SelectedBanOption = sortOption;
 
-			IQueryable<UzytkownikBan> banyQuery = _context.KontoUzytkownika
-				.Join(_context.Ban,
+			IQueryable<UserBan> bansQuery = _context.UserAccounts
+				.Join(_context.Bans,
 				u => u.Id,
-				b => b.KontoUzytkownikaId,
+				b => b.UserAccountId,
 				(u, b) => new
 				{
 					u.UserName,
-					u.Imie,
-					u.Nazwisko,
-					b.Data,
-					b.Dlugosc,
-					b.Przyczyna
-				}).Select(ub => new UzytkownikBan
+					u.FirstName,
+					u.LastName,
+					b.Date,
+					b.DurationDays,
+					b.Reason
+				}).Select(ub => new UserBan
 				{
-					NazwaUzytkownika = ub.UserName,
-					Imie = ub.Imie,
-					Nazwisko = ub.Nazwisko,
-					Data = ub.Data,
-					Dlugosc = ub.Dlugosc,
-					Przyczyna = ub.Przyczyna
+					UserName = ub.UserName,
+					FirstName = ub.FirstName,
+					LastName = ub.LastName,
+					Date = ub.Date,
+					DurationDays = ub.DurationDays,
+					Reason = ub.Reason
 				});
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				banyQuery = banyQuery.Where(ub => ub.NazwaUzytkownika.Contains(searchText) || ub.Imie.Contains(searchText) || ub.Nazwisko.Contains(searchText) || ub.Data.ToString().Contains(searchText) || ub.Dlugosc.ToString().Contains(searchText) || ub.Przyczyna.Contains(searchText));
+				bansQuery = bansQuery.Where(ub => ub.UserName.Contains(searchText) || ub.FirstName.Contains(searchText) || ub.LastName.Contains(searchText) || ub.Date.ToString().Contains(searchText) || ub.DurationDays.ToString().Contains(searchText) || ub.Reason.Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa użytkownika (A-Z)":
-					banyQuery = banyQuery.OrderBy(ub => ub.NazwaUzytkownika);
+					bansQuery = bansQuery.OrderBy(ub => ub.UserName);
 					break;
 				case "Nazwa użytkownika (Z-A)":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.NazwaUzytkownika);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.UserName);
 					break;
 				case "Imie (A-Z)":
-					banyQuery = banyQuery.OrderBy(ub => ub.Imie);
+					bansQuery = bansQuery.OrderBy(ub => ub.FirstName);
 					break;
 				case "Imie (Z-A)":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.Imie);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.FirstName);
 					break;
 				case "Nazwisko (A-Z)":
-					banyQuery = banyQuery.OrderBy(ub => ub.Nazwisko);
+					bansQuery = bansQuery.OrderBy(ub => ub.LastName);
 					break;
 				case "Nazwisko (Z-A)":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.Nazwisko);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.LastName);
 					break;
 				case "Data rosnąco":
-					banyQuery = banyQuery.OrderBy(ub => ub.Data);
+					bansQuery = bansQuery.OrderBy(ub => ub.Date);
 					break;
 				case "Data malejąco":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.Data);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.Date);
 					break;
 				case "Liczba dni rosnąco":
-					banyQuery = banyQuery.OrderBy(ub => ub.Dlugosc);
+					bansQuery = bansQuery.OrderBy(ub => ub.DurationDays);
 					break;
 				case "Liczba dni malejąco":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.Dlugosc);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.DurationDays);
 					break;
 				case "Przyczyna (A-Z)":
-					banyQuery = banyQuery.OrderBy(ub => ub.Przyczyna);
+					bansQuery = bansQuery.OrderBy(ub => ub.Reason);
 					break;
 				case "Przyczyna (Z-A)":
-					banyQuery = banyQuery.OrderByDescending(ub => ub.Przyczyna);
+					bansQuery = bansQuery.OrderByDescending(ub => ub.Reason);
 					break;
 				default:
 					break;
 			}
 
-			List<UzytkownikBan> dane = banyQuery.ToList();
+			List<UserBan> rows = bansQuery.ToList();
 
-			return View(dane);
+			return View(rows);
 		}
 
 
@@ -254,9 +254,9 @@ namespace MonteCarlo.NET.Controllers.Administrator
 
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult Limity(string? opcjaSort, string? searchText) 
+        public IActionResult Limits(string? sortOption, string? searchText) 
 		{
-			string[] opcjeSortowaniaLimitow = new string[]
+			string[] limitSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa użytkownika (A-Z)",
@@ -270,79 +270,79 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Kwota rosnąco",
 				"Kwota malejąco"
 			};
-			ViewBag.opcjeSortowaniaLimitow = opcjeSortowaniaLimitow;
-			ViewBag.SelectedOptionLimit = opcjaSort;
+			ViewBag.limitSortOptions = limitSortOptions;
+			ViewBag.SelectedLimitOption = sortOption;
 
-			IQueryable<UzytkownikLimity> limityQuery = _context.KontoUzytkownika
-				.Join(_context.Limit,
+			IQueryable<UserLimit> limitsQuery = _context.UserAccounts
+				.Join(_context.Limits,
 				u => u.Id,
-				l => l.KontoUzytkownikaId,
+				l => l.UserAccountId,
 				(u, l) => new
 				{
 					u.UserName,
-					u.Imie,
-					u.Nazwisko,
-					l.Data,
-					l.Kwota
-				}).Select(ul => new UzytkownikLimity
+					u.FirstName,
+					u.LastName,
+					l.Date,
+					l.Amount
+				}).Select(ul => new UserLimit
 				{
-					NazwaUzytkownika = ul.UserName,
-					Nazwisko = ul.Nazwisko,
-					Imie = ul.Imie,
-					Data = ul.Data,
-					Kwota = (float)ul.Kwota
+					UserName = ul.UserName,
+					LastName = ul.LastName,
+					FirstName = ul.FirstName,
+					Date = ul.Date,
+					Amount = (float)ul.Amount
 				});
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				limityQuery = limityQuery.Where(ul => ul.NazwaUzytkownika.Contains(searchText) || ul.Imie.Contains(searchText) || ul.Nazwisko.Contains(searchText) || ul.Data.ToString().Contains(searchText) || ul.Kwota.ToString().Contains(searchText));
+				limitsQuery = limitsQuery.Where(ul => ul.UserName.Contains(searchText) || ul.FirstName.Contains(searchText) || ul.LastName.Contains(searchText) || ul.Date.ToString().Contains(searchText) || ul.Amount.ToString().Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa użytkownika (A-Z)":
-					limityQuery = limityQuery.OrderBy(ul => ul.NazwaUzytkownika);
+					limitsQuery = limitsQuery.OrderBy(ul => ul.UserName);
 					break;
 				case "Nazwa użytkownika (Z-A)":
-					limityQuery = limityQuery.OrderByDescending(ul => ul.NazwaUzytkownika);
+					limitsQuery = limitsQuery.OrderByDescending(ul => ul.UserName);
 					break;
 				case "Imie (A-Z)":
-					limityQuery = limityQuery.OrderBy(ul => ul.Imie);
+					limitsQuery = limitsQuery.OrderBy(ul => ul.FirstName);
 					break;
 				case "Imie (Z-A)":
-					limityQuery = limityQuery.OrderByDescending(ul => ul.Imie);
+					limitsQuery = limitsQuery.OrderByDescending(ul => ul.FirstName);
 					break;
 				case "Nazwisko (A-Z)":
-					limityQuery = limityQuery.OrderBy(ul => ul.Nazwisko);
+					limitsQuery = limitsQuery.OrderBy(ul => ul.LastName);
 					break;
 				case "Nazwisko (Z-A)":
-					limityQuery = limityQuery.OrderByDescending(ul => ul.Nazwisko);
+					limitsQuery = limitsQuery.OrderByDescending(ul => ul.LastName);
 					break;
 				case "Data rosnąco":
-					limityQuery = limityQuery.OrderBy(ul => ul.Data);
+					limitsQuery = limitsQuery.OrderBy(ul => ul.Date);
 					break;
 				case "Data malejąco":
-					limityQuery = limityQuery.OrderByDescending(ul => ul.Data);
+					limitsQuery = limitsQuery.OrderByDescending(ul => ul.Date);
 					break;
 				case "Kwota rosnąco":
-					limityQuery = limityQuery.OrderBy(ul => ul.Kwota);
+					limitsQuery = limitsQuery.OrderBy(ul => ul.Amount);
 					break;
 				case "Kwota malejąco":
-					limityQuery = limityQuery.OrderByDescending(ul => ul.Kwota);
+					limitsQuery = limitsQuery.OrderByDescending(ul => ul.Amount);
 					break;
 				default:
 					break;
 			}
 
-			List<UzytkownikLimity> dane = limityQuery.ToList();
+			List<UserLimit> rows = limitsQuery.ToList();
 
-			return View(dane); 
+			return View(rows); 
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult Gry(string? opcjaSort, string? searchText)
+        public IActionResult Games(string? sortOption, string? searchText)
 		{
-			string[] opcjeSortowaniaGra = new string[]
+			string[] gameSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa gry (A-Z)",
@@ -350,54 +350,54 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Minimalna stawka rosnąco",
 				"Minimalna stawka malejąco"
 			};
-			ViewBag.opcjeSortowaniaGra = opcjeSortowaniaGra;
-			ViewBag.SelectedOptionGra = opcjaSort;
-			IQueryable<Gra> gryQuery = _context.Gra;
+			ViewBag.gameSortOptions = gameSortOptions;
+			ViewBag.SelectedGameOption = sortOption;
+			IQueryable<Game> gamesQuery = _context.Games;
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				gryQuery = gryQuery.Where(g => g.Nazwa.Contains(searchText) || g.MinStawka.ToString().Contains(searchText));
+				gamesQuery = gamesQuery.Where(g => g.Name.Contains(searchText) || g.MinStake.ToString().Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa gry (A-Z)":
-					gryQuery = gryQuery.OrderBy(g => g.Nazwa);
+					gamesQuery = gamesQuery.OrderBy(g => g.Name);
 					break;
 				case "Nazwa gry (Z-A)":
-					gryQuery = gryQuery.OrderByDescending(g => g.Nazwa);
+					gamesQuery = gamesQuery.OrderByDescending(g => g.Name);
 					break;
 				case "Minimalna stawka rosnąco":
-					gryQuery = gryQuery.OrderBy(g => g.MinStawka);
+					gamesQuery = gamesQuery.OrderBy(g => g.MinStake);
 					break;
 				case "Minimalna stawka malejąco":
-					gryQuery = gryQuery.OrderByDescending(g => g.MinStawka);
+					gamesQuery = gamesQuery.OrderByDescending(g => g.MinStake);
 					break;
 				default:
 					break;
 			}
 
-			List<Gra> dane = gryQuery.ToList();
+			List<Game> rows = gamesQuery.ToList();
 
-			return View(dane); 
+			return View(rows); 
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult AktualizacjaStawki(int idGry, int nowaStawka)
+        public IActionResult UpdateMinStake(int gameId, int newStake)
 		{
-			var gra = _context.Gra.Find(idGry);
-			if (gra != null)
+			var game = _context.Games.Find(gameId);
+			if (game != null)
 			{
-				gra.MinStawka = nowaStawka;
+				game.MinStake = newStake;
 				_context.SaveChanges();
 			}
-			return RedirectToAction("Gry");
+			return RedirectToAction("Games");
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult Transakcje(string? opcjaSort, string? searchText)
+        public IActionResult Transactions(string? sortOption, string? searchText)
 		{
-			string[] opcjeSortowaniaTransakcja = new string[]
+			string[] transactionSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa użytkownika (A-Z)",
@@ -413,87 +413,87 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Typ (A-Z)",
 				"Typ (Z-A)"
 			};
-			ViewBag.opcjeSortowaniaTransakcji = opcjeSortowaniaTransakcja;
-			ViewBag.SelectedOptionTransakcja = opcjaSort;
+			ViewBag.transactionSortOptions = transactionSortOptions;
+			ViewBag.SelectedTransactionOption = sortOption;
 
-			IQueryable<UzytkownikTransakcja> transakcjaQuery = _context.KontoUzytkownika
-				.Join(_context.Transakcja,
+			IQueryable<UserTransaction> transactionsQuery = _context.UserAccounts
+				.Join(_context.Transactions,
 				u => u.Id,
-				t => t.KontoUzytkownikaId,
+				t => t.UserAccountId,
 				(u, t) => new
 				{
 					u.UserName,
-					u.Nazwisko,
-					u.Imie,
-					t.Data,
-					t.Kwota,
-					t.Typ
-				}).Select(ut => new UzytkownikTransakcja
+					u.LastName,
+					u.FirstName,
+					t.Date,
+					t.Amount,
+					t.Type
+				}).Select(ut => new UserTransaction
 				{
-					NazwaUzytkownika = ut.UserName,
-					Nazwisko = ut.Nazwisko,
-					Imie = ut.Imie,
-					Data = ut.Data,
-					Kwota = (float)ut.Kwota,
-					Typ = ut.Typ
+					UserName = ut.UserName,
+					LastName = ut.LastName,
+					FirstName = ut.FirstName,
+					Date = ut.Date,
+					Amount = (float)ut.Amount,
+					Type = ut.Type
 				});
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				transakcjaQuery = transakcjaQuery.Where(ut => ut.NazwaUzytkownika.Contains(searchText) || ut.Imie.Contains(searchText) || ut.Nazwisko.Contains(searchText) || ut.Data.ToString().Contains(searchText) || ut.Kwota.ToString().Contains(searchText) || ut.Typ.Contains(searchText));
+				transactionsQuery = transactionsQuery.Where(ut => ut.UserName.Contains(searchText) || ut.FirstName.Contains(searchText) || ut.LastName.Contains(searchText) || ut.Date.ToString().Contains(searchText) || ut.Amount.ToString().Contains(searchText) || ut.Type.Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa użytkownika (A-Z)":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.NazwaUzytkownika);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.UserName);
 					break;
 				case "Nazwa użytkownika (Z-A)":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.NazwaUzytkownika);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.UserName);
 					break;
 				case "Imie (A-Z)":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.Imie);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.FirstName);
 					break;
 				case "Imie (Z-A)":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.Imie);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.FirstName);
 					break;
 				case "Nazwisko (A-Z)":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.Nazwisko);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.LastName);
 					break;
 				case "Nazwisko (Z-A)":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.Nazwisko);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.LastName);
 					break;
 				case "Data rosnąco":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.Data);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.Date);
 					break;
 				case "Data malejąco":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.Data);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.Date);
 					break;
 				case "Kwota rosnąco":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.Kwota);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.Amount);
 					break;
 				case "Kwota malejąco":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.Kwota);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.Amount);
 					break;
 				case "Typ (A-Z)":
-					transakcjaQuery = transakcjaQuery.OrderBy(ut => ut.Typ);
+					transactionsQuery = transactionsQuery.OrderBy(ut => ut.Type);
 					break;
 				case "Typ (Z-A)":
-					transakcjaQuery = transakcjaQuery.OrderByDescending(ut => ut.Typ);
+					transactionsQuery = transactionsQuery.OrderByDescending(ut => ut.Type);
 					break;
 				default:
 					break;
 			}
 
-			List<UzytkownikTransakcja> dane = transakcjaQuery.ToList();
+			List<UserTransaction> rows = transactionsQuery.ToList();
 
-			return View(dane);
+			return View(rows);
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult GraKonto(string? opcjaSort, string? searchText)
+        public IActionResult GameAccounts(string? sortOption, string? searchText)
 		{
-			string[] opcjeSortowaniaGraKonto = new string[]
+			string[] gameAccountSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa użytkownika (A-Z)",
@@ -511,106 +511,106 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Nazwa gry (A-Z)",
 				"Nazwa gry (Z-A)"
 			};
-			ViewBag.opcjeSortowaniaGraKonto = opcjeSortowaniaGraKonto;
-			ViewBag.SelectedOptionGraKonto = opcjaSort;
+			ViewBag.gameAccountSortOptions = gameAccountSortOptions;
+			ViewBag.SelectedGameAccountOption = sortOption;
 
-			IQueryable<UzytkownikGraKonta> graKontoQuery = _context.KontoUzytkownika
-				.Join(_context.GraKonto,
+			IQueryable<UserGameAccount> gameAccountsQuery = _context.UserAccounts
+				.Join(_context.GameAccounts,
 				u => u.Id,
-				gk => gk.KontoUzytkownikaId,
+				gk => gk.UserAccountId,
 				(u, gk) => new
 				{
 					u.UserName,
-					u.Imie,
-					u.Nazwisko,
-					gk.IleWygrano,
-					gk.IlePostawiono,
-					gk.Czas,
-					gk.IdGry
-				}).Join(_context.Gra,
-				ugk => ugk.IdGry,
-				g => g.IdGry,
+					u.FirstName,
+					u.LastName,
+					gk.AmountWon,
+					gk.AmountStaked,
+					gk.PlayedAt,
+					gk.GameId
+				}).Join(_context.Games,
+				ugk => ugk.GameId,
+				g => g.GameId,
 				(ugk, g) => new
 				{
 					ugk.UserName,
-					ugk.Imie,
-					ugk.Nazwisko,
-					ugk.IleWygrano,
-					ugk.IlePostawiono,
-					ugk.Czas,
-					g.Nazwa
-				}).Select(x => new UzytkownikGraKonta
+					ugk.FirstName,
+					ugk.LastName,
+					ugk.AmountWon,
+					ugk.AmountStaked,
+					ugk.PlayedAt,
+					g.Name
+				}).Select(x => new UserGameAccount
 				{
-					NazwaUzytkownika = x.UserName,
-					Nazwisko = x.Nazwisko,
-					Imie = x.Imie,
-					IleWygrano = (float)x.IleWygrano,
-					IlePostawiono = (float)x.IlePostawiono,
-					Czas = (DateTime)x.Czas,
-					NazwaGry = x.Nazwa
+					UserName = x.UserName,
+					LastName = x.LastName,
+					FirstName = x.FirstName,
+					AmountWon = (float)x.AmountWon,
+					AmountStaked = (float)x.AmountStaked,
+					PlayedAt = (DateTime)x.PlayedAt,
+					GameName = x.Name
 				});
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				graKontoQuery = graKontoQuery.Where(gk => gk.NazwaUzytkownika.Contains(searchText) || gk.Imie.Contains(searchText) || gk.Nazwisko.Contains(searchText) || gk.IleWygrano.ToString().Contains(searchText) || gk.IlePostawiono.ToString().Contains(searchText) || gk.Czas.ToString().Contains(searchText) || gk.NazwaGry.Contains(searchText));
+				gameAccountsQuery = gameAccountsQuery.Where(gk => gk.UserName.Contains(searchText) || gk.FirstName.Contains(searchText) || gk.LastName.Contains(searchText) || gk.AmountWon.ToString().Contains(searchText) || gk.AmountStaked.ToString().Contains(searchText) || gk.PlayedAt.ToString().Contains(searchText) || gk.GameName.Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa użytkownika (A-Z)":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.NazwaUzytkownika);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.UserName);
 					break;
 				case "Nazwa użytkownika (Z-A)":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.NazwaUzytkownika);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.UserName);
 					break;
 				case "Imie (A-Z)":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.Imie);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.FirstName);
 					break;
 				case "Imie (Z-A)":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.Imie);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.FirstName);
 					break;
 				case "Nazwisko (A-Z)":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.Nazwisko);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.LastName);
 					break;
 				case "Nazwisko (Z-A)":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.Nazwisko);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.LastName);
 					break;
 				case "Wygrana rosnąco":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.IleWygrano);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.AmountWon);
 					break;
 				case "Wygrana malejąco":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.IleWygrano);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.AmountWon);
 					break;
 				case "Postawienie rosnąco":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.IlePostawiono);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.AmountStaked);
 					break;
 				case "Postawienie malejąco":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.IlePostawiono);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.AmountStaked);
 					break;
 				case "Czas rosnąco":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.Czas);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.PlayedAt);
 					break;
 				case "Czas malejąco":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.Czas);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.PlayedAt);
 					break;
 				case "Nazwa gry (A-Z)":
-					graKontoQuery = graKontoQuery.OrderBy(gk => gk.NazwaGry);
+					gameAccountsQuery = gameAccountsQuery.OrderBy(gk => gk.GameName);
 					break;
 				case "Nazwa gry (Z-A)":
-					graKontoQuery = graKontoQuery.OrderByDescending(gk => gk.NazwaGry);
+					gameAccountsQuery = gameAccountsQuery.OrderByDescending(gk => gk.GameName);
 					break;
 				default:
 					break;
 			}
 
-			List<UzytkownikGraKonta> dane = graKontoQuery.ToList();
-			return View(dane);
+			List<UserGameAccount> rows = gameAccountsQuery.ToList();
+			return View(rows);
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult Zgloszenie(string? opcjaSort, string? searchText)
+        public IActionResult Reports(string? sortOption, string? searchText)
 		{
-			string[] opcjeSortowaniaZgloszenie = new string[]
+			string[] reportSortOptions = new string[]
 			{
 				"Domyślnie",
 				"Nazwa użytkownika (A-Z)",
@@ -626,108 +626,108 @@ namespace MonteCarlo.NET.Controllers.Administrator
 				"Tytuł (A-Z)",
 				"Tytuł (Z-A)"
 			};
-			ViewBag.opcjeSortowaniaZgloszenie = opcjeSortowaniaZgloszenie;
-			ViewBag.SelectedOptionZgloszenie = opcjaSort;
+			ViewBag.reportSortOptions = reportSortOptions;
+			ViewBag.SelectedReportOption = sortOption;
 
-			IQueryable<UzytkownikZgloszenie> zgloszenieQuery = _context.KontoUzytkownika
-				.Join(_context.Zgloszenie,
+			IQueryable<UserReport> reportsQuery = _context.UserAccounts
+				.Join(_context.Reports,
 				u => u.Id,
-				z => z.KontoUzytkownikaId,
+				z => z.UserAccountId,
 				(u, z) => new
 				{
 					u.UserName,
-					u.Nazwisko,
-					u.Imie,
-					z.Tytul,
+					u.LastName,
+					u.FirstName,
+					z.Title,
 					z.Status,
-					z.Data,
-					z.IdZgloszenia
-				}).Select(uz => new UzytkownikZgloszenie
+					z.Date,
+					z.ReportId
+				}).Select(uz => new UserReport
 				{
-					IdZgloszenia = uz.IdZgloszenia,
-					NazwaUzytkownika = uz.UserName,
-					Nazwisko = uz.Nazwisko,
-					Imie = uz.Imie,
+					ReportId = uz.ReportId,
+					UserName = uz.UserName,
+					LastName = uz.LastName,
+					FirstName = uz.FirstName,
 					Status = uz.Status,
-					Data = uz.Data,
-					Tytul = uz.Tytul
+					Date = uz.Date,
+					Title = uz.Title
 				});
 
 			if (!string.IsNullOrEmpty(searchText))
 			{
-				zgloszenieQuery = zgloszenieQuery.Where(uz => uz.NazwaUzytkownika.Contains(searchText) || uz.Imie.Contains(searchText) || uz.Nazwisko.Contains(searchText) || uz.Status.Contains(searchText) || uz.Tytul.Contains(searchText) || uz.Data.ToString().Contains(searchText));
+				reportsQuery = reportsQuery.Where(uz => uz.UserName.Contains(searchText) || uz.FirstName.Contains(searchText) || uz.LastName.Contains(searchText) || uz.Status.Contains(searchText) || uz.Title.Contains(searchText) || uz.Date.ToString().Contains(searchText));
 			}
 
-			switch (opcjaSort)
+			switch (sortOption)
 			{
 				case "Nazwa użytkownika (A-Z)":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.NazwaUzytkownika);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.UserName);
 					break;
 				case "Nazwa użytkownika (Z-A)":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.NazwaUzytkownika);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.UserName);
 					break;
 				case "Imie (A-Z)":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.Imie);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.FirstName);
 					break;
 				case "Imie (Z-A)":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.Imie);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.FirstName);
 					break;
 				case "Nazwisko (A-Z)":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.Nazwisko);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.LastName);
 					break;
 				case "Nazwisko (Z-A)":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.Nazwisko);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.LastName);
 					break;
 				case "Data rosnąco":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.Data);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.Date);
 					break;
 				case "Data malejąco":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.Data);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.Date);
 					break;
 				case "Status (A-Z)":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.Status);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.Status);
 					break;
 				case "Status (Z-A)":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.Status);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.Status);
 					break;
 				case "Tytuł (A-Z)":
-					zgloszenieQuery = zgloszenieQuery.OrderBy(uz => uz.Tytul);
+					reportsQuery = reportsQuery.OrderBy(uz => uz.Title);
 					break;
 				case "Tytuł (Z-A)":
-					zgloszenieQuery = zgloszenieQuery.OrderByDescending(uz => uz.Tytul);
+					reportsQuery = reportsQuery.OrderByDescending(uz => uz.Title);
 					break;
 				default:
 					break;
 			}
 
-			List<UzytkownikZgloszenie> dane = zgloszenieQuery.ToList();
+			List<UserReport> rows = reportsQuery.ToList();
 
-			return View(dane);
+			return View(rows);
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult SzczegolyZgloszenia(int zgloszenieId)
+        public IActionResult ReportDetails(int reportId)
 		{
-			var zgloszenie = _context.Zgloszenie.Find(zgloszenieId);
-			if (zgloszenie == null)
+			var report = _context.Reports.Find(reportId);
+			if (report == null)
 			{
 				return NotFound();
 			}
-			return View(zgloszenie);
+			return View(report);
 		}
 
         [Authorize(Roles = "Administrator")]
-        public IActionResult ZmienStatus(int zgloszenieId, string nowyStatus)
+        public IActionResult ChangeStatus(int reportId, string newStatus)
 		{
-			var zgloszenie = _context.Zgloszenie.Find(zgloszenieId);
-            if (zgloszenie == null)
+			var report = _context.Reports.Find(reportId);
+            if (report == null)
             {
                 return NotFound();
             }
 
-			zgloszenie.Status = nowyStatus;
+			report.Status = newStatus;
 			_context.SaveChanges();
-			return RedirectToAction("Zgloszenie");
+			return RedirectToAction("Reports");
 		}
 
 

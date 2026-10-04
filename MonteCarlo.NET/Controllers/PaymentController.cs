@@ -9,13 +9,13 @@ using Stripe.Checkout;
 public class PaymentController : Controller
 {
 
-    private readonly UserManager<KontoUzytkownika> _userManager;
+    private readonly UserManager<UserAccount> _userManager;
     private readonly ILogger<HomeController> _logger;
-    private readonly KasynoContext _context;
+    private readonly CasinoContext _context;
 
     string apiKey = Environment.GetEnvironmentVariable("STRIPE_KEY");
 
-    public PaymentController(ILogger<HomeController> logger, UserManager<KontoUzytkownika> userManager,KasynoContext context)
+    public PaymentController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context)
     {
         _logger = logger;
         _userManager = userManager;
@@ -24,23 +24,23 @@ public class PaymentController : Controller
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateCheckoutSession(long kwota)
+    public async Task<IActionResult> CreateCheckoutSession(long amount)
     {
-      
+
         var client = new Stripe.StripeClient(apiKey);
         var user = await _userManager.GetUserAsync(User);
-        ViewData["Saldo"] = user.Saldo;
+        ViewData["Saldo"] = user.Balance;
         var lineItems = new List<SessionLineItemOptions>
     {
         new SessionLineItemOptions
         {
             PriceData = new SessionLineItemPriceDataOptions
             {
-                UnitAmount = (kwota)*100, 
+                UnitAmount = (amount)*100,
                 Currency = "pln",
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
-                    Name = "Doładowanie konta o " + kwota+" brigmacoinsów"
+                    Name = "Doładowanie konta o " + amount+" brigmacoinsów"
                 }
             },
             Quantity = 1
@@ -60,9 +60,9 @@ public class PaymentController : Controller
         Session session = service.Create(options);
         var id = session.Id;
 
-        TempData["SessionId"] = id; 
+        TempData["SessionId"] = id;
 
-       
+
         return Redirect(session.Url);
     }
 
@@ -74,28 +74,27 @@ public class PaymentController : Controller
     public async Task<IActionResult> Success()
     {
 
-        var sessionId = TempData["SessionId"]?.ToString();  
+        var sessionId = TempData["SessionId"]?.ToString();
         if (string.IsNullOrEmpty(sessionId))
         {
             return RedirectToAction("Cancel");
         }
-        //secret key
         var client = new Stripe.StripeClient(apiKey);
 
         var service = new SessionService(client);
-        var session = service.Get(sessionId);  
-   
-        double charge = (double) session.AmountTotal/100;
+        var session = service.Get(sessionId);
+
+        double charge = (double)session.AmountTotal / 100;
 
         var user = await _userManager.GetUserAsync(User);
-       
-        user.Saldo += charge;
+
+        user.Balance += charge;
 
 
-        Transakcja transaction = new Transakcja { Data=DateTime.Now, Kwota=charge, Typ="Wplata",KontoUzytkownika=user,KontoUzytkownikaId=user.Id};
+        Transaction transaction = new Transaction { Date = DateTime.Now, Amount = charge, Type = "Wplata", UserAccount = user, UserAccountId = user.Id };
         _context.Add(transaction);
         _context.SaveChanges();
-        ViewData["Saldo"] = user.Saldo;
+        ViewData["Saldo"] = user.Balance;
         ViewData["Level"] = user.Level;
         return View();
     }
@@ -106,7 +105,7 @@ public class PaymentController : Controller
     public async Task<IActionResult> Cancel()
     {
         var user = await _userManager.GetUserAsync(User);
-        ViewData["Saldo"] = user.Saldo;
+        ViewData["Saldo"] = user.Balance;
         ViewData["Level"] = user.Level;
         return View();
     }

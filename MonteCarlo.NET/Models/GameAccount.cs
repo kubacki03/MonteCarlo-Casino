@@ -1,21 +1,29 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-    public class GraKonto
+    public class GameAccount
     {
         [Required]
-        public int IdGraKonto { get; set; }
+        [Column("IdGraKonto")]
+        public int GameAccountId { get; set; }
         [Required]
-        public string KontoUzytkownikaId { get; set; }
-        public virtual KontoUzytkownika KontoUzytkownika { get; set; }
+        [Column("KontoUzytkownikaId")]
+        public string UserAccountId { get; set; }
+        public virtual UserAccount UserAccount { get; set; }
         [Required]
-        public double IleWygrano { get; set; }
+        [Column("IleWygrano")]
+        public double AmountWon { get; set; }
         [Required]
-        public double IlePostawiono { get; set; }
-        public DateTime Czas { get; set; } = DateTime.Now;//jeśli chcemy dodawać date kiedy grano w grę wystarczy odkomentować
+        [Column("IlePostawiono")]
+        public double AmountStaked { get; set; }
+        [Column("Czas")]
+        public DateTime PlayedAt { get; set; } = DateTime.Now;
         [Required]
-        public int IdGry { get; set; }
-        public virtual Gra Gra { get; set; }
+        [Column("IdGry")]
+        public int GameId { get; set; }
+        public virtual Game Game { get; set; }
     }
 }

@@ -162,7 +162,7 @@
 
         async function getUserName() {
             try {
-                const response = await fetch('/getName'); // Endpoint do pobrania imienia użytkownika
+                const response = await fetch('/getName');
                 if (response.ok) {
                     userName = await response.text();
                     console.log("Imię użytkownika pobrano:", userName);

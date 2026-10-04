@@ -10,15 +10,15 @@
 <h2 style="color:white">Wyścigi Konne</h2>
 <p style="color:white">Wybierz konia i obstaw kwotę.</p>
 
-@using (Html.BeginForm("KonieMenu", "Konie", FormMethod.Post))
+@using (Html.BeginForm("Index", "HorseRace", FormMethod.Post))
 {
     <div style="color:white">
-        @Html.LabelFor(m => m.WybranyKon, "Wybierz konia:")
-        @Html.DropDownListFor(m => m.WybranyKon, new SelectList(Model.DostepneKonie, "imie", "imie"), " -- Wybierz --")
+        @Html.LabelFor(m => m.SelectedHorse, "Wybierz konia:")
+        @Html.DropDownListFor(m => m.SelectedHorse, new SelectList(Model.AvailableHorses, "Name", "Name"), " -- Wybierz --")
     </div>
     <div style="color:white">
-        @Html.LabelFor(m => m.Kwota, "Kwota:")
-        @Html.TextBoxFor(m => m.Kwota, new { type = "number", step = "0.01" })
+        @Html.LabelFor(m => m.Amount, "Kwota:")
+        @Html.TextBoxFor(m => m.Amount, new { type = "number", step = "0.01" })
     </div>
     <div>
         <input type="submit" value="Obstaw i rozpocznij wyścig" />
@@ -29,29 +29,29 @@
 <div class="container my-4">
     <h1 class="mb-4" style="color:white">Nasze Konie</h1>
     <div class="row">
-        @foreach (var kon in Model.DostepneKonie)
+        @foreach (var horse in Model.AvailableHorses)
         {
 
             <div class="col-md-3 mb-4">
                 <div class="card shadow">
                     @{
-                        var nazwaObrazka = kon.imie
+                        var imageName = horse.Name
                         .Replace("ł", "l");
                     }
-                    <img src="@($"/images/{nazwaObrazka}.webp")" class="card-img-top" alt="@kon.imie" />
+                    <img src="@($"/images/{imageName}.webp")" class="card-img-top" alt="@horse.Name" />
 
                     <div class="card-body">
-                        <h5 class="card-title">@kon.imie</h5>
+                        <h5 class="card-title">@horse.Name</h5>
                         <p class="card-text">
-                            Koń  ' @kon.imie ' jest szybki, wytrzymały i wyjątkowy 😳
+                            Koń  ' @horse.Name ' jest szybki, wytrzymały i wyjątkowy 😳
                         </p>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Wiek:</strong> @kon.wiek</li>
-                        <li class="list-group-item"><strong>Waga:</strong> @kon.waga kg</li>
-                        <li class="list-group-item"><strong>Rozmiar:</strong> @kon.rozmiar cm</li>
-                        <li class="list-group-item"><strong>Kolor:</strong> @kon.kolor</li>
-                        <li class="list-group-item"><strong>Prędkość:</strong> @kon.predkosc km/h</li>
+                        <li class="list-group-item"><strong>Wiek:</strong> @horse.Age</li>
+                        <li class="list-group-item"><strong>Waga:</strong> @horse.Weight kg</li>
+                        <li class="list-group-item"><strong>Rozmiar:</strong> @horse.Size cm</li>
+                        <li class="list-group-item"><strong>Kolor:</strong> @horse.Color</li>
+                        <li class="list-group-item"><strong>Prędkość:</strong> @horse.Speed km/h</li>
                         <li class="list-group-item"><strong>Zwycięstwa:</strong> 0</li>
                     </ul>
                 </div>

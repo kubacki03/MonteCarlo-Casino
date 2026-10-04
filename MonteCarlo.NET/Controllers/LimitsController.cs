@@ -8,11 +8,11 @@ namespace MonteCarlo.NET.Controllers
 {
     public class LimitsController : Controller
     {
-        private readonly UserManager<KontoUzytkownika> _userManager;
+        private readonly UserManager<UserAccount> _userManager;
         private readonly ILogger<HomeController> _logger;
-        private readonly KasynoContext _context;
-        private readonly SignInManager<KontoUzytkownika> _signInManager;
-        public LimitsController(ILogger<HomeController> logger, UserManager<KontoUzytkownika> userManager, KasynoContext context, SignInManager<KontoUzytkownika> signInManager)
+        private readonly CasinoContext _context;
+        private readonly SignInManager<UserAccount> _signInManager;
+        public LimitsController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context, SignInManager<UserAccount> signInManager)
         {
             _logger = logger;
             _userManager = userManager;
@@ -23,16 +23,16 @@ namespace MonteCarlo.NET.Controllers
         public async Task<IActionResult> Limits()
         {
             var user = await _userManager.GetUserAsync(User);
-            var currentLimit = _context.Limit
-            .Where(l => l.KontoUzytkownikaId == user.Id)
-            .AsEnumerable() 
-            .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks)) 
+            var currentLimit = _context.Limits
+            .Where(l => l.UserAccountId == user.Id)
+            .AsEnumerable()
+            .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
             .FirstOrDefault();
 
             if (user != null)
             {
                 ViewData["Level"] = user.Level;
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
             }
             return View(currentLimit);
         }
@@ -44,7 +44,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
             if (user != null && await _userManager.IsLockedOutAsync(user))
@@ -55,35 +55,35 @@ namespace MonteCarlo.NET.Controllers
                 return RedirectToAction("Login");
             }
 
-            var currentLimit = _context.Limit
-         .Where(l => l.KontoUzytkownikaId == user.Id)
+            var currentLimit = _context.Limits
+         .Where(l => l.UserAccountId == user.Id)
          .AsEnumerable()
-         .OrderBy(l => Math.Abs((l.Data - DateTime.Now).Ticks))
+         .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
          .FirstOrDefault();
 
 
-            if (currentLimit != null && DateTime.Now < currentLimit.Data.AddDays(1) )
+            if (currentLimit != null && DateTime.Now < currentLimit.Date.AddDays(1))
             {
                 ViewData["Error"] = "Nie mineły 24h od poprzedniego limitu";
                 return View("Limits", currentLimit);
             }
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
                 ViewData["Level"] = user.Level;
             }
 
-            Limit newLimit = new Limit { Data =DateTime.Now , Kwota=limit , KontoUzytkownikaId=user.Id, KontoUzytkownika=user};
-            _context.Limit.Add(newLimit);
+            Limit newLimit = new Limit { Date = DateTime.Now, Amount = limit, UserAccountId = user.Id, UserAccount = user };
+            _context.Limits.Add(newLimit);
             _context.SaveChanges();
             currentLimit = newLimit;
             ViewData["Confirm"] = "Dodano nowy limit";
 
-            return View("Limits",currentLimit);
+            return View("Limits", currentLimit);
         }
 
 
-      
+
 
     }
 }

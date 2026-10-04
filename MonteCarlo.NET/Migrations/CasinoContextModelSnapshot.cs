@@ -10,8 +10,8 @@ using MonteCarlo.NET.Data;
 
 namespace MonteCarlo.NET.Migrations
 {
-    [DbContext(typeof(KasynoContext))]
-    partial class KasynoContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(CasinoContext))]
+    partial class CasinoContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -51,7 +51,7 @@ namespace MonteCarlo.NET.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1d05fa48-1c86-41b9-850a-0d69268207c6",
+                            Id = "e61ff799-4f47-4940-ab43-e2cfe387334f",
                             ConcurrencyStamp = "asd1",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
@@ -149,8 +149,8 @@ namespace MonteCarlo.NET.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "de46f4b9-2872-40e7-a3cd-ca0874c767eb",
-                            RoleId = "1d05fa48-1c86-41b9-850a-0d69268207c6"
+                            UserId = "8ca8f07b-ab7c-488c-b3bc-1571e10100da",
+                            RoleId = "e61ff799-4f47-4940-ab43-e2cfe387334f"
                         });
                 });
 
@@ -177,267 +177,182 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("MonteCarlo.NET.Models.Ban", b =>
                 {
-                    b.Property<int>("IdBana")
+                    b.Property<int>("BanId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdBana");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBana"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BanId"));
 
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Data");
 
-                    b.Property<int>("Dlugosc")
-                        .HasColumnType("int");
+                    b.Property<int>("DurationDays")
+                        .HasColumnType("int")
+                        .HasColumnName("Dlugosc");
 
-                    b.Property<string>("KontoUzytkownikaId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Przyczyna")
+                    b.Property<string>("Reason")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasColumnName("Przyczyna");
 
-                    b.HasKey("IdBana");
+                    b.Property<string>("UserAccountId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("KontoUzytkownikaId");
 
-                    b.HasIndex("KontoUzytkownikaId");
+                    b.HasKey("BanId");
 
-                    b.ToTable("Ban");
+                    b.HasIndex("UserAccountId");
+
+                    b.ToTable("Ban", (string)null);
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Druzyna", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Bet", b =>
                 {
-                    b.Property<int>("DruzynaId")
+                    b.Property<int>("BetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdZakladu");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DruzynaId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BetId"));
 
-                    b.Property<string>("League")
+                    b.Property<bool>("HasWon")
+                        .HasColumnType("bit")
+                        .HasColumnName("czyWygral");
+
+                    b.Property<bool>("IsRewardGranted")
+                        .HasColumnType("bit")
+                        .HasColumnName("czyPrzyznanoNagrode");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int")
+                        .HasColumnName("IdMeczu");
+
+                    b.Property<string>("PlayerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("IdGracza");
+
+                    b.Property<long>("StakedAmount")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PostawionaKwota");
+
+                    b.Property<int>("WinnerTeamId")
+                        .HasColumnType("int")
+                        .HasColumnName("IdZwyciezcy");
+
+                    b.HasKey("BetId");
+
+                    b.ToTable("Zaklady", (string)null);
+                });
+
+            modelBuilder.Entity("MonteCarlo.NET.Models.Game", b =>
+                {
+                    b.Property<int>("GameId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("IdGry");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameId"));
+
+                    b.Property<double>("MinStake")
+                        .HasColumnType("float")
+                        .HasColumnName("MinStawka");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DruzynaId");
-
-                    b.ToTable("Druzyna");
-
-                    b.HasData(
-                        new
-                        {
-                            DruzynaId = 1,
-                            League = "Premier League",
-                            Name = "Olimpia .NeT"
-                        },
-                        new
-                        {
-                            DruzynaId = 2,
-                            League = "Premier League",
-                            Name = "Java FC"
-                        });
-                });
-
-            modelBuilder.Entity("MonteCarlo.NET.Models.Gra", b =>
-                {
-                    b.Property<int>("IdGry")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGry"));
-
-                    b.Property<double>("MinStawka")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Nazwa")
-                        .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("Nazwa");
 
-                    b.HasKey("IdGry");
+                    b.HasKey("GameId");
 
-                    b.ToTable("Gra");
+                    b.ToTable("Gra", (string)null);
 
                     b.HasData(
                         new
                         {
-                            IdGry = 1,
-                            MinStawka = 1.0,
-                            Nazwa = "Slotsy"
+                            GameId = 1,
+                            MinStake = 1.0,
+                            Name = "Slotsy"
                         },
                         new
                         {
-                            IdGry = 2,
-                            MinStawka = 1.0,
-                            Nazwa = "Zdrapka koniczynka"
+                            GameId = 2,
+                            MinStake = 1.0,
+                            Name = "Zdrapka koniczynka"
                         },
                         new
                         {
-                            IdGry = 3,
-                            MinStawka = 1.0,
-                            Nazwa = "Zdrapka Prosta"
+                            GameId = 3,
+                            MinStake = 1.0,
+                            Name = "Zdrapka Prosta"
                         },
                         new
                         {
-                            IdGry = 4,
-                            MinStawka = 1.0,
-                            Nazwa = "Wyscigi Konne"
+                            GameId = 4,
+                            MinStake = 1.0,
+                            Name = "Wyscigi Konne"
                         },
                         new
                         {
-                            IdGry = 5,
-                            MinStawka = 1.0,
-                            Nazwa = "Obstawianie"
+                            GameId = 5,
+                            MinStake = 1.0,
+                            Name = "Obstawianie"
                         },
                         new
                         {
-                            IdGry = 6,
-                            MinStawka = 1.0,
-                            Nazwa = "Ruletka"
+                            GameId = 6,
+                            MinStake = 1.0,
+                            Name = "Ruletka"
                         },
                         new
                         {
-                            IdGry = 7,
-                            MinStawka = 1.0,
-                            Nazwa = "Kosci"
+                            GameId = 7,
+                            MinStake = 1.0,
+                            Name = "Kosci"
                         });
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.GraKonto", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.GameAccount", b =>
                 {
-                    b.Property<int>("IdGraKonto")
+                    b.Property<int>("GameAccountId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdGraKonto");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGraKonto"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameAccountId"));
 
-                    b.Property<DateTime>("Czas")
-                        .HasColumnType("datetime2");
+                    b.Property<double>("AmountStaked")
+                        .HasColumnType("float")
+                        .HasColumnName("IlePostawiono");
 
-                    b.Property<int>("IdGry")
-                        .HasColumnType("int");
+                    b.Property<double>("AmountWon")
+                        .HasColumnType("float")
+                        .HasColumnName("IleWygrano");
 
-                    b.Property<double>("IlePostawiono")
-                        .HasColumnType("float");
+                    b.Property<int>("GameId")
+                        .HasColumnType("int")
+                        .HasColumnName("IdGry");
 
-                    b.Property<double>("IleWygrano")
-                        .HasColumnType("float");
+                    b.Property<DateTime>("PlayedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Czas");
 
-                    b.Property<string>("KontoUzytkownikaId")
+                    b.Property<string>("UserAccountId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("KontoUzytkownikaId");
 
-                    b.HasKey("IdGraKonto");
+                    b.HasKey("GameAccountId");
 
-                    b.HasIndex("IdGry");
+                    b.HasIndex("GameId");
 
-                    b.HasIndex("KontoUzytkownikaId");
+                    b.HasIndex("UserAccountId");
 
-                    b.ToTable("GraKonto");
-                });
-
-            modelBuilder.Entity("MonteCarlo.NET.Models.KontoUzytkownika", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Imie")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Nazwisko")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<double?>("Saldo")
-                        .HasColumnType("float");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "de46f4b9-2872-40e7-a3cd-ca0874c767eb",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "b59c25ec-5bb6-40dc-8899-0dc4da6b3542",
-                            Email = "admin@gmail.com",
-                            EmailConfirmed = false,
-                            Imie = "Admin",
-                            Level = 0,
-                            LockoutEnabled = true,
-                            Nazwisko = "Admin",
-                            NormalizedEmail = "ADMIN@GMAIL.COM",
-                            NormalizedUserName = "ADMIN@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOMq5PA3vVfus87WD/DxYk4dWZj3JkkXU4OFimrPQs4Na4z5+LgbpCxMo5S+kZvJ/g==",
-                            PhoneNumberConfirmed = false,
-                            Saldo = 0.0,
-                            SecurityStamp = "060d2513-157d-4cda-aab4-4988857d6ac3",
-                            TwoFactorEnabled = false,
-                            UserName = "admin@gmail.com"
-                        });
+                    b.ToTable("GraKonto", (string)null);
                 });
 
             modelBuilder.Entity("MonteCarlo.NET.Models.Level", b =>
@@ -456,7 +371,7 @@ namespace MonteCarlo.NET.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Levele");
+                    b.ToTable("Levele", (string)null);
 
                     b.HasData(
                         new
@@ -505,36 +420,41 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("MonteCarlo.NET.Models.Limit", b =>
                 {
-                    b.Property<int>("IdLimitu")
+                    b.Property<int>("LimitId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdLimitu");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdLimitu"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LimitId"));
 
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
+                    b.Property<double>("Amount")
+                        .HasColumnType("float")
+                        .HasColumnName("Kwota");
 
-                    b.Property<string>("KontoUzytkownikaId")
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Data");
+
+                    b.Property<string>("UserAccountId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("KontoUzytkownikaId");
 
-                    b.Property<double>("Kwota")
-                        .HasColumnType("float");
+                    b.HasKey("LimitId");
 
-                    b.HasKey("IdLimitu");
+                    b.HasIndex("UserAccountId");
 
-                    b.HasIndex("KontoUzytkownikaId");
-
-                    b.ToTable("Limit");
+                    b.ToTable("Limit", (string)null);
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Mecz", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Match", b =>
                 {
-                    b.Property<int>("MeczId")
+                    b.Property<int>("MatchId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("MeczId");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MeczId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MatchId"));
 
                     b.Property<int>("AwayTeamGoals")
                         .HasColumnType("int");
@@ -549,6 +469,10 @@ namespace MonteCarlo.NET.Migrations
                     b.Property<float>("AwayTeamOdds")
                         .HasColumnType("real");
 
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("data");
+
                     b.Property<int>("HomeTeamGoals")
                         .HasColumnType("int");
 
@@ -562,147 +486,265 @@ namespace MonteCarlo.NET.Migrations
                     b.Property<float>("HomeTeamOdds")
                         .HasColumnType("real");
 
-                    b.Property<DateOnly>("data")
-                        .HasColumnType("date");
-
-                    b.HasKey("MeczId");
+                    b.HasKey("MatchId");
 
                     b.HasIndex("AwayTeamId");
 
                     b.HasIndex("HomeTeamId");
 
-                    b.ToTable("Mecz");
+                    b.ToTable("Mecz", (string)null);
 
                     b.HasData(
                         new
                         {
-                            MeczId = 1,
+                            MatchId = 1,
                             AwayTeamGoals = 2,
                             AwayTeamId = 1,
                             AwayTeamName = "Java FC",
                             AwayTeamOdds = 2f,
+                            Date = new DateOnly(2025, 2, 2),
                             HomeTeamGoals = 2,
                             HomeTeamId = 2,
                             HomeTeamName = "Olimpia .NeT",
-                            HomeTeamOdds = 3f,
-                            data = new DateOnly(2025, 2, 2)
+                            HomeTeamOdds = 3f
                         },
                         new
                         {
-                            MeczId = 2,
+                            MatchId = 2,
                             AwayTeamGoals = 2,
                             AwayTeamId = 1,
                             AwayTeamName = "Java FC",
                             AwayTeamOdds = 2f,
+                            Date = new DateOnly(2025, 2, 3),
                             HomeTeamGoals = 2,
                             HomeTeamId = 2,
                             HomeTeamName = "Olimpia .NeT",
-                            HomeTeamOdds = 3f,
-                            data = new DateOnly(2025, 2, 3)
+                            HomeTeamOdds = 3f
                         });
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Transakcja", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Report", b =>
                 {
-                    b.Property<int>("IdTransakcji")
+                    b.Property<int>("ReportId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdZgloszenia");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTransakcji"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("KontoUzytkownikaId")
+                    b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<double>("Kwota")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Typ")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("IdTransakcji");
-
-                    b.HasIndex("KontoUzytkownikaId");
-
-                    b.ToTable("Transakcja");
-                });
-
-            modelBuilder.Entity("MonteCarlo.NET.Models.Zaklad", b =>
-                {
-                    b.Property<int>("IdZakladu")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdZakladu"));
-
-                    b.Property<string>("IdGracza")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("IdMeczu")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdZwyciezcy")
-                        .HasColumnType("int");
-
-                    b.Property<long>("PostawionaKwota")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("czyPrzyznanoNagrode")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("czyWygral")
-                        .HasColumnType("bit");
-
-                    b.HasKey("IdZakladu");
-
-                    b.ToTable("Zaklady");
-                });
-
-            modelBuilder.Entity("MonteCarlo.NET.Models.Zgloszenie", b =>
-                {
-                    b.Property<int>("IdZgloszenia")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdZgloszenia"));
-
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("KontoUzytkownikaId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Notatki")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasColumnName("Tresc");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Data");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)")
+                        .HasColumnName("Notatki");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Tresc")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Tytul")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Tytul");
 
-                    b.HasKey("IdZgloszenia");
+                    b.Property<string>("UserAccountId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("KontoUzytkownikaId");
 
-                    b.HasIndex("KontoUzytkownikaId");
+                    b.HasKey("ReportId");
 
-                    b.ToTable("Zgloszenie");
+                    b.HasIndex("UserAccountId");
+
+                    b.ToTable("Zgloszenie", (string)null);
+                });
+
+            modelBuilder.Entity("MonteCarlo.NET.Models.Team", b =>
+                {
+                    b.Property<int>("TeamId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("DruzynaId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeamId"));
+
+                    b.Property<string>("League")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TeamId");
+
+                    b.ToTable("Druzyna", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            TeamId = 1,
+                            League = "Premier League",
+                            Name = "Olimpia .NeT"
+                        },
+                        new
+                        {
+                            TeamId = 2,
+                            League = "Premier League",
+                            Name = "Java FC"
+                        });
+                });
+
+            modelBuilder.Entity("MonteCarlo.NET.Models.Transaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("IdTransakcji");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("float")
+                        .HasColumnName("Kwota");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Data");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Typ");
+
+                    b.Property<string>("UserAccountId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("KontoUzytkownikaId");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("UserAccountId");
+
+                    b.ToTable("Transakcja", (string)null);
+                });
+
+            modelBuilder.Entity("MonteCarlo.NET.Models.UserAccount", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Balance")
+                        .HasColumnType("float")
+                        .HasColumnName("Saldo");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Imie");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Nazwisko");
+
+                    b.Property<int?>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "8ca8f07b-ab7c-488c-b3bc-1571e10100da",
+                            AccessFailedCount = 0,
+                            Balance = 0.0,
+                            ConcurrencyStamp = "6b84402b-98b1-49d9-a10a-7a407cb1aa31",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = false,
+                            FirstName = "Admin",
+                            LastName = "Admin",
+                            Level = 0,
+                            LockoutEnabled = true,
+                            NormalizedEmail = "ADMIN@GMAIL.COM",
+                            NormalizedUserName = "ADMIN@GMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFxm56pT3lkZSkHT1RKVEG2AWclz4TGAj89Tc4CAkgZrXfRtxC/6zj0+0T6F1UdPvA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "115778a3-6593-4ad3-a680-8c83d11a9f80",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@gmail.com"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -716,7 +758,7 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", null)
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -725,7 +767,7 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", null)
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -740,7 +782,7 @@ namespace MonteCarlo.NET.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", null)
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -749,7 +791,7 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", null)
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -758,102 +800,102 @@ namespace MonteCarlo.NET.Migrations
 
             modelBuilder.Entity("MonteCarlo.NET.Models.Ban", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", "KontoUzytkownika")
-                        .WithMany("Bany")
-                        .HasForeignKey("KontoUzytkownikaId")
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", "UserAccount")
+                        .WithMany("Bans")
+                        .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("KontoUzytkownika");
+                    b.Navigation("UserAccount");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.GraKonto", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.GameAccount", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.Gra", "Gra")
-                        .WithMany("GryKonta")
-                        .HasForeignKey("IdGry")
+                    b.HasOne("MonteCarlo.NET.Models.Game", "Game")
+                        .WithMany("GameAccounts")
+                        .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", "KontoUzytkownika")
-                        .WithMany("GryKonta")
-                        .HasForeignKey("KontoUzytkownikaId")
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", "UserAccount")
+                        .WithMany("GameAccounts")
+                        .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Gra");
+                    b.Navigation("Game");
 
-                    b.Navigation("KontoUzytkownika");
+                    b.Navigation("UserAccount");
                 });
 
             modelBuilder.Entity("MonteCarlo.NET.Models.Limit", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", "KontoUzytkownika")
-                        .WithMany("Limity")
-                        .HasForeignKey("KontoUzytkownikaId")
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", "UserAccount")
+                        .WithMany("Limits")
+                        .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("KontoUzytkownika");
+                    b.Navigation("UserAccount");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Mecz", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Match", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.Druzyna", "DruzynaAway")
+                    b.HasOne("MonteCarlo.NET.Models.Team", "AwayTeam")
                         .WithMany()
                         .HasForeignKey("AwayTeamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MonteCarlo.NET.Models.Druzyna", "DruzynaHome")
+                    b.HasOne("MonteCarlo.NET.Models.Team", "HomeTeam")
                         .WithMany()
                         .HasForeignKey("HomeTeamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("DruzynaAway");
+                    b.Navigation("AwayTeam");
 
-                    b.Navigation("DruzynaHome");
+                    b.Navigation("HomeTeam");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Transakcja", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Report", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", "KontoUzytkownika")
-                        .WithMany("Trasakcje")
-                        .HasForeignKey("KontoUzytkownikaId")
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", "UserAccount")
+                        .WithMany("Reports")
+                        .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("KontoUzytkownika");
+                    b.Navigation("UserAccount");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Zgloszenie", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Transaction", b =>
                 {
-                    b.HasOne("MonteCarlo.NET.Models.KontoUzytkownika", "KontoUzytkownika")
-                        .WithMany("Zgloszenia")
-                        .HasForeignKey("KontoUzytkownikaId")
+                    b.HasOne("MonteCarlo.NET.Models.UserAccount", "UserAccount")
+                        .WithMany("Transactions")
+                        .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("KontoUzytkownika");
+                    b.Navigation("UserAccount");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.Gra", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.Game", b =>
                 {
-                    b.Navigation("GryKonta");
+                    b.Navigation("GameAccounts");
                 });
 
-            modelBuilder.Entity("MonteCarlo.NET.Models.KontoUzytkownika", b =>
+            modelBuilder.Entity("MonteCarlo.NET.Models.UserAccount", b =>
                 {
-                    b.Navigation("Bany");
+                    b.Navigation("Bans");
 
-                    b.Navigation("GryKonta");
+                    b.Navigation("GameAccounts");
 
-                    b.Navigation("Limity");
+                    b.Navigation("Limits");
 
-                    b.Navigation("Trasakcje");
+                    b.Navigation("Reports");
 
-                    b.Navigation("Zgloszenia");
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

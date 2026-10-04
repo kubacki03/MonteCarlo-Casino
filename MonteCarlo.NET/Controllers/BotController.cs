@@ -25,14 +25,14 @@ public class BotController : ControllerBase
 
     [HttpGet]
     [Route("getResponse")]
-    public string getResponse(string message)
+    public string GetResponse(string message)
     {
-        var response = getBestResponse(message);  
+        var response = GetBestResponse(message);  
         return response;
     }
 
 
-    public string getBestResponse(string message)
+    public string GetBestResponse(string message)
     {
         string bestResponse = "Sprobuj ponownie";
         var max = 0.0;
@@ -54,7 +54,9 @@ public class BotController : ControllerBase
     public static double GetJaroWinklerDistance(string s1, string s2)
     {
         if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+        {
             return 0.0;
+        }
 
         int m = 0; 
         int t = 0; 
@@ -81,7 +83,9 @@ public class BotController : ControllerBase
         }
 
         if (m == 0)
+        {
             return 0.0;
+        }
 
         int k = 0;
         for (int i = 0; i < s1.Length; i++)

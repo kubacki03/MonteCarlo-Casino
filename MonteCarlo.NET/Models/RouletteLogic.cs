@@ -6,8 +6,8 @@ namespace MonteCarlo.NET.Models
     public class RouletteNumber
     {
         public int Number { get; set; }
-        public string Color { get; set; } // "Red", "Black", or "Green" for 0/00
-        public string Row { get; set; }  // "1st 12", "2nd 12", "3rd 12"
+        public string Color { get; set; }
+        public string Row { get; set; }
 
         public static List<RouletteNumber> GenerateRouletteNumbers()
         {
@@ -58,20 +58,11 @@ namespace MonteCarlo.NET.Models
     }
 
 
-    public class RuletkaFunkcje
+    public class RouletteLogic
     {
-        // 0-36 = numerki
-        // 37 = czarne
-        // 38 = czerwone
-        // 39-41 = rzędy (odpowiednio 39/ dzielenie przez 3 40/ dzielenie przez 3 daje reszte 1 etc.)
-        // 42-44 = kolumnny (odpowiednio 42 od 1 do 12/ 43 od 13 do 24 etc.)
-        // 45 = 1-18
-        // 46 = 19-36
-        // 47 = parzyste
-        // 48 = nieparzyste
-        public static float[] bets = new float[49];
+        public static float[] Bets = new float[49];
 
-        public static string[] betString =
+        public static string[] BetLabels =
         {
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
             "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
@@ -84,87 +75,86 @@ namespace MonteCarlo.NET.Models
             "Parzyste", "Nieparzyste",
         };
 
-        public static int wynik;
+        public static int LastResult;
 
-        public static int spin()
+        public static int Spin()
         {
             RandomNumberGenerator rng = new RandomNumberGenerator();
 
-            int wynik = (int)rng.Next(37);
+            int result = (int)rng.Next(37);
 
-            return wynik;
+            return result;
         }
 
 
-        public static void bet_numbers(float money, int position)
+        public static void PlaceBet(float money, int position)
         {
             if (money > 0 && money == Math.Floor(money))
             {
-                bets[position] = money;
-                //zabierz kasę z konta
+                Bets[position] = money;
             }
         }
 
-        public static void clear_bets()
+        public static void ClearBets()
         {
-            for (int i = 0; i < bets.Length; i++)
+            for (int i = 0; i < Bets.Length; i++)
             {
-                bets[i] = 0;
+                Bets[i] = 0;
             }
         }
 
-        public static float checkWin(int mode, float money)
+        public static float CheckWin(int mode, float money)
         {
-            int[] czerwone = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 };
+            int[] redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 };
 
-            if (mode <= 36) //numerki
+            if (mode <= 36)
             {
-                if (mode == wynik)
+                if (mode == LastResult)
                 {
                     return 35 * money;
                 }
             }
-            else if (mode == 37) //czarne
+            else if (mode == 37)
             {
-                if (!czerwone.Contains(wynik) && wynik != 0)
+                if (!redNumbers.Contains(LastResult) && LastResult != 0)
                 {
                     return 2 * money;
                 }
             }
-            else if (mode == 38) //czerwone
+            else if (mode == 38)
             {
-                if (czerwone.Contains(wynik) && wynik != 0)
+                if (redNumbers.Contains(LastResult) && LastResult != 0)
                 {
                     return 2 * money;
                 }
             }
-            else if (mode <= 41) //rzędy
+            else if (mode <= 41)
             {
-                float rzad = wynik / 12;
-                if (Math.Ceiling(rzad) == mode - 38)
+                float row = LastResult / 12;
+                if (Math.Ceiling(row) == mode - 38)
                 {
                     return 3 * money;
                 }
             }
-            else if (mode <= 44) //kolumny
+            else if (mode <= 44)
             {
-                int kolumna = (wynik - 1) % 3;
-                if (kolumna == mode - 42 && wynik != 0)
+                int column = (LastResult - 1) % 3;
+                if (column == mode - 42 && LastResult != 0)
                 {
                     return 3 * money;
                 }
             }
-            else if (mode <= 46) //1-18 i 19-36
+            else if (mode <= 46)
             {
-                float rzad = wynik / 18;
-                if (Math.Ceiling(rzad) == mode - 44)
+                float row = LastResult / 18;
+                if (Math.Ceiling(row) == mode - 44)
                 {
                     return 2 * money;
                 }
             }
-            else if (mode <= 48) //parzyste/nieparzyste
+            else if (mode <= 48)
             {
-                if (wynik % 2 == mode - 47 && wynik != 0)
+                if (LastResult % 2 == mode - 47 && LastResult != 0)
                 {
                     return 2 * money;
                 }
@@ -173,40 +163,40 @@ namespace MonteCarlo.NET.Models
             return 0;
         }
 
-        public static float grac()
+        public static float SpinAndCalculateWinnings()
         {
-            wynik = spin();
-            float suma = 0;
+            LastResult = Spin();
+            float sum = 0;
 
-            for (int i = 0; i < bets.Length; i++)
+            for (int i = 0; i < Bets.Length; i++)
             {
-                if (bets[i] > 0)
+                if (Bets[i] > 0)
                 {
-                    suma += checkWin(i, bets[i]);
+                    sum += CheckWin(i, Bets[i]);
                 }
             }
 
-            return suma;
+            return sum;
         }
 
-        public static float gracDwa()
+        public static float CollectTotalBets()
         {
-            float suma = 0;
+            float sum = 0;
 
-            for (int i = 0; i < bets.Length; i++)
+            for (int i = 0; i < Bets.Length; i++)
             {
-                suma += bets[i];
+                sum += Bets[i];
             }
 
-            clear_bets();
+            ClearBets();
 
-            return suma;
+            return sum;
         }
     }
 
     class RandomNumberGenerator
     {
-        private const long m = 4294967296; // = 2^32
+        private const long m = 4294967296;
         private const long a = 1664525;
         private const long c = 1013904223;
         private long _last;

@@ -2,15 +2,15 @@
 
 namespace MonteCarlo.NET.Models
 {
-    public class FormularzZgloszenie
+    public class ReportFormViewModel
     {
         [Required]
         [MaxLength(50)]
-        public string Tytul { get; set; }
+        public string Title { get; set; }
         [Required]
         [MaxLength(250)]
-        public string Tresc { get; set; }
+        public string Content { get; set; }
         [MaxLength(250)]
-        public string? Notatki { get; set; }
+        public string? Notes { get; set; }
     }
 }

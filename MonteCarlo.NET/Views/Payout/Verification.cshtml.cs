@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace MonteCarlo.NET.Views.Payout
 {
-    public class WeryfikacjaModel : PageModel
+    public class VerificationModel : PageModel
     {
         public void OnGet()
         {

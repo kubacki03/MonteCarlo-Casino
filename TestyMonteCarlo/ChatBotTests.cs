@@ -19,7 +19,7 @@ namespace TestyMonteCarlo
             string expectedResponse = "Aby grać w gry w MonteCarlo należy mieć ukończone 18 lat";
 
           
-            var response = controller.getResponse(inputMessage);
+            var response = controller.GetResponse(inputMessage);
 
           
             Assert.Equal(expectedResponse, response);
@@ -36,7 +36,7 @@ namespace TestyMonteCarlo
             string expectedResponse = "Tak, aby wypłacić pieniądze na swoje konto bankowe, należy przejść do sekcji 'Saldo', wybrać opcję 'Wypłać' i wprowadzić dane konta bankowego. Pamiętaj, że minimalna kwota wypłaty to 10zł.";
 
             
-            var response = controller.getResponse(inputMessage);
+            var response = controller.GetResponse(inputMessage);
 
             
             Assert.Equal(expectedResponse, response);

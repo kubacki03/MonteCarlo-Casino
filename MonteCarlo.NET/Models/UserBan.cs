@@ -1,12 +1,12 @@
 ﻿namespace MonteCarlo.NET.Models
 {
-	public class UzytkownikBan
+	public class UserBan
 	{
-        public string NazwaUzytkownika { get; set; }
-        public string Nazwisko { get; set; }
-        public string Imie { get; set; }
-        public DateTime Data { get; set; }
-        public int Dlugosc { get; set; }
-        public string Przyczyna { get; set; }
+        public string UserName { get; set; }
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+        public DateTime Date { get; set; }
+        public int DurationDays { get; set; }
+        public string Reason { get; set; }
     }
 }

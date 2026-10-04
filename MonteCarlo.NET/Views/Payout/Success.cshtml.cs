@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace MonteCarlo.NET.Views.Payout
 {
-    public class SuccesModel : PageModel
+    public class SuccessModel : PageModel
     {
         public void OnGet()
         {

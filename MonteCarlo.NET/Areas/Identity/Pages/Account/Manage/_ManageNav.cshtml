@@ -1,4 +1,4 @@
-﻿@inject SignInManager<KontoUzytkownika> SignInManager
+﻿@inject SignInManager<UserAccount> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
@@ -15,7 +15,7 @@
   
     <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Dane osobowe</a></li>
     <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Wallet">Saldo</a></li>
-    <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="Limits" asp-action="Limits">Limity</a></li>
+    <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="Limits" asp-action="Limits">Limits</a></li>
     <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="UserStats" asp-action="UserStats">Statystki</a></li>
-    <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="Zgloszenie" asp-action="FormularzZgloszenie">Zgłoś</a></li>
+    <li class="nav-item"> <a class="nav-link" asp-area="" asp-controller="Report" asp-action="ReportForm">Zgłoś</a></li>
 </ul>

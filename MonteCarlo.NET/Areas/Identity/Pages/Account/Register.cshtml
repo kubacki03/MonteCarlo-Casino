@@ -31,20 +31,20 @@
             
             
             <div class="form-floating mb-3">
-                <input asp-for="Input.Imie" class="form-control text-black" placeholder="Imie" />
-                <label asp-for="Input.Imie" class="form-label text-black">Imie</label>
-                <span asp-validation-for="Input.Imie" class="text-danger"></span>
+                <input asp-for="Input.FirstName" class="form-control text-black" placeholder="Imie" />
+                <label asp-for="Input.FirstName" class="form-label text-black">Imie</label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.Nazwisko" class="form-control text-black" placeholder="Nazwisko" />
-                <label asp-for="Input.Nazwisko" class="form-label text-black">Nazwisko</label>
-                <span asp-validation-for="Input.Nazwisko" class="text-danger"></span>
+                <input asp-for="Input.LastName" class="form-control text-black" placeholder="Nazwisko" />
+                <label asp-for="Input.LastName" class="form-label text-black">Nazwisko</label>
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.DowodOsobisty" class="form-label">Dowód osobisty (zdjęcie)</label>
-                <input asp-for="Input.DowodOsobisty" class="form-control" type="file" accept="image/*" />
-                <span asp-validation-for="Input.DowodOsobisty" class="text-danger"></span>
+                <label asp-for="Input.IdCardImage" class="form-label">Dowód osobisty (zdjęcie)</label>
+                <input asp-for="Input.IdCardImage" class="form-control" type="file" accept="image/*" />
+                <span asp-validation-for="Input.IdCardImage" class="text-danger"></span>
             </div>
 
 

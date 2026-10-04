@@ -1,29 +1,38 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MonteCarlo.NET.Models
 {
-    public class Zaklad
+    public class Bet
     {
         [Key]
-        public int IdZakladu { get; set; }
+        [Column("IdZakladu")]
+        public int BetId { get; set; }
 
         [Required]
-        public string IdGracza { get; set; }
+        [Column("IdGracza")]
+        public string PlayerId { get; set; }
 
         [Required]
-        public int IdMeczu { get; set; }
+        [Column("IdMeczu")]
+        public int MatchId { get; set; }
 
         [Required]
-        public int IdZwyciezcy { get; set; }
+        [Column("IdZwyciezcy")]
+        public int WinnerTeamId { get; set; }
 
         [Required]
-        public long PostawionaKwota { get; set; }
+        [Column("PostawionaKwota")]
+        public long StakedAmount { get; set; }
 
         [Required]
-        public bool czyPrzyznanoNagrode { get; set; }
+        [Column("czyPrzyznanoNagrode")]
+        public bool IsRewardGranted { get; set; }
 
        
-        public bool czyWygral { get; set; }
+        [Column("czyWygral")]
+        public bool HasWon { get; set; }
 
     }
 }

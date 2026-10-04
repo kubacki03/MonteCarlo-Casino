@@ -10,11 +10,11 @@ namespace MonteCarlo.NET.Controllers
     public class PayoutController : Controller
     {
 
-        private readonly UserManager<KontoUzytkownika> _userManager;
+        private readonly UserManager<UserAccount> _userManager;
         private readonly ILogger<HomeController> _logger;
-        private readonly KasynoContext _context;
-        private readonly SignInManager<KontoUzytkownika> _signInManager;
-        public PayoutController(ILogger<HomeController> logger, UserManager<KontoUzytkownika> userManager, KasynoContext context, SignInManager<KontoUzytkownika> signInManager)
+        private readonly CasinoContext _context;
+        private readonly SignInManager<UserAccount> _signInManager;
+        public PayoutController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context, SignInManager<UserAccount> signInManager)
         {
             _logger = logger;
             _userManager = userManager;
@@ -27,7 +27,7 @@ namespace MonteCarlo.NET.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
             }
             if (user != null && await _userManager.IsLockedOutAsync(user))
             {
@@ -45,22 +45,22 @@ namespace MonteCarlo.NET.Controllers
         [Route("api/payout/report")]
         public async Task<IActionResult> Report(string email)
         {
-            var account = _context.KontoUzytkownika.FirstOrDefault(x => x.Email == email);
+            var account = _context.UserAccounts.FirstOrDefault(x => x.Email == email);
 
             if (account != null)
             {
                 
-                Zgloszenie report = new Zgloszenie
+                Report report = new Report
                 {
-                    Data = DateTime.Now,
-                    KontoUzytkownikaId = account.Id,
-                    Notatki = "java > c#",
+                    Date = DateTime.Now,
+                    UserAccountId = account.Id,
+                    Notes = "java > c#",
                     Status = "Przeslano",
-                    Tresc = "Zgloszono nieautoryzowaną próbę wypłaty z konta",
-                    Tytul = "Nieautoryzowana wyplata",
-                    KontoUzytkownika = account
+                    Content = "Zgloszono nieautoryzowaną próbę wypłaty z konta",
+                    Title = "Nieautoryzowana wyplata",
+                    UserAccount = account
                 };
-                _context.Zgloszenie.Add(report);
+                _context.Reports.Add(report);
                 _context.SaveChanges();
 
                
@@ -68,7 +68,7 @@ namespace MonteCarlo.NET.Controllers
                 account.LockoutEnd = new DateTimeOffset(lockoutEndDate);
 
                
-                _context.KontoUzytkownika.Update(account);
+                _context.UserAccounts.Update(account);
                 await _context.SaveChangesAsync();
 
                
@@ -81,14 +81,14 @@ namespace MonteCarlo.NET.Controllers
 
 
         [Authorize]
-        public async Task<IActionResult> CreatePayout(long kwota, string numer)
+        public async Task<IActionResult> CreatePayout(long amount, string accountNumber)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
             }
-            if (user.Saldo < kwota)
+            if (user.Balance < amount)
             {
                 TempData["ErrorMessage"] = "Masz za malo brigmacoinsow";
 
@@ -97,35 +97,35 @@ namespace MonteCarlo.NET.Controllers
             Random random = new Random();
             int code = random.Next(1000, 10000);
             HttpContext.Session.SetInt32("kod", code);
-            HttpContext.Session.SetInt32("kwota", (int)kwota);
-            HttpContext.Session.SetString("numer",numer);
+            HttpContext.Session.SetInt32("kwota", (int)amount);
+            HttpContext.Session.SetString("numer",accountNumber);
             EmailService emailService = new EmailService();
-            emailService.SendEmail(user.Email, code, kwota);
+            emailService.SendEmail(user.Email, code, amount);
 
-            return View("Weryfikacja");
+            return View("Verification");
 
         }
 
         [Authorize]
-        public async Task<IActionResult> ConfirmedPayout(long kod)
+        public async Task<IActionResult> ConfirmedPayout(long code)
         {
-            Console.WriteLine("TWoj kod " + kod);
-            long ammount = (long)HttpContext.Session.GetInt32("kwota");
+            Console.WriteLine("TWoj kod " + code);
+            long amount = (long)HttpContext.Session.GetInt32("kwota");
             string number = HttpContext.Session.GetString("numer");
 
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
-                ViewData["Saldo"] = user.Saldo;
+                ViewData["Saldo"] = user.Balance;
             }
-            if(kod != HttpContext.Session.GetInt32("kod"))
+            if(code != HttpContext.Session.GetInt32("kod"))
             {
 
                 TempData["ErrorMessage"] = "Podany zły kod";
 
-                return View("Weryfikacja");
+                return View("Verification");
             }
-            if (user.Saldo < ammount)
+            if (user.Balance < amount)
             {
                 TempData["ErrorMessage"] = "Masz za malo brigmacoinsow";
 
@@ -133,14 +133,14 @@ namespace MonteCarlo.NET.Controllers
             }
             else
             {
-                Transakcja transakcja = new Transakcja { Data = DateTime.Now, KontoUzytkownika = user, Kwota = ammount, KontoUzytkownikaId = user.Id, Typ="Wyplata" };
-                _context.Add(transakcja);
-                user.Saldo -= ammount;
+                Transaction transaction = new Transaction { Date = DateTime.Now, UserAccount = user, Amount = amount, UserAccountId = user.Id, Type="Wyplata" };
+                _context.Add(transaction);
+                user.Balance -= amount;
                 _context.SaveChanges();
             }
             HttpContext.Session.Remove("kod");
-            ViewData["Saldo"] = user.Saldo;
-            return View("Succes");
+            ViewData["Saldo"] = user.Balance;
+            return View("Success");
         }
     }
 }

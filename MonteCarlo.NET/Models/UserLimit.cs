@@ -1,11 +1,11 @@
 ﻿namespace MonteCarlo.NET.Models
 {
-	public class UzytkownikLimity
+	public class UserLimit
 	{
-        public string NazwaUzytkownika { get; set; }
-        public string Nazwisko { get; set; }
-        public string Imie { get; set; }
-        public float Kwota { get; set; }
-        public DateTime Data { get; set; }
+        public string UserName { get; set; }
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+        public float Amount { get; set; }
+        public DateTime Date { get; set; }
     }
 }

@@ -4,11 +4,11 @@ using MonteCarlo.NET.Models;
 
 namespace MonteCarlo.NET.Controllers
 {
-    public class RuletkaController : Controller
+    public class RouletteController : Controller
     {
-        private readonly ILogger<RuletkaController> _logger;
+        private readonly ILogger<RouletteController> _logger;
 
-        public RuletkaController(ILogger<RuletkaController> logger)
+        public RouletteController(ILogger<RouletteController> logger)
         {
             _logger = logger;
         }
@@ -40,7 +40,7 @@ namespace MonteCarlo.NET.Controllers
                     return BadRequest();
                 }
 
-                RuletkaFunkcje.bet_numbers(bet.Money, bet.Position);
+                RouletteLogic.PlaceBet(bet.Money, bet.Position);
 
                 return StatusCode(204);
             }
@@ -57,26 +57,28 @@ namespace MonteCarlo.NET.Controllers
         [Route("RController/GetBets")]
         public IActionResult GetBets()
         {
-            return Json(RuletkaFunkcje.bets);
+            return Json(RouletteLogic.Bets);
         }
 
         [HttpPost]
         [Route("RController/GetResult")]
         public IActionResult GetResult()
         {
-            float winnings = RuletkaFunkcje.grac();
-            float allBets = RuletkaFunkcje.gracDwa();
+            float winnings = RouletteLogic.SpinAndCalculateWinnings();
+            float allBets = RouletteLogic.CollectTotalBets();
             
             bool winner = false;
             if (winnings > 0)
+            {
                 winner = true;
+            }
 
             return Json(new
             {
                 win = winner,
                 bets = allBets,
                 coins = winnings,
-                finalNumber = RuletkaFunkcje.wynik
+                finalNumber = RouletteLogic.LastResult
             });
         }
     }

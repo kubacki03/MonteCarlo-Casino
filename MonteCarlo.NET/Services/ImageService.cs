@@ -5,10 +5,10 @@ namespace MonteCarlo.NET.Services
 {
     public class ImageService
     {
-        public static Boolean SprawdzWiek(string imagePath)
+        public static Boolean CheckAge(string imagePath)
         {
             string tessDataPath = "C:\\Users\\Kuba\\source\\repos\\montecarlo.net\\MonteCarlo.NET\\tessdata\\";  
-            Console.WriteLine(System.IO.Directory.Exists(tessDataPath)); // Powinno zwrócić True
+            Console.WriteLine(System.IO.Directory.Exists(tessDataPath));
 
             try
             {
