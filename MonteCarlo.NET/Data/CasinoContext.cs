@@ -89,9 +89,6 @@ namespace MonteCarlo.NET.Data
                 .HasForeignKey(m => m.AwayTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            string adminRoleId = Guid.NewGuid().ToString();
-            string adminUserId = Guid.NewGuid().ToString();
-
             modelBuilder.Entity<Game>().HasData(
                 new Game { GameId = 1, Name = "Slotsy", MinStake = 1 },
                 new Game { GameId = 2, Name = "Zdrapka koniczynka", MinStake = 1 },
@@ -111,32 +108,6 @@ namespace MonteCarlo.NET.Data
                 new Level { Id = 6, NumberOfLevel = 5, MinimumPlayedGames = 500 },
                 new Level { Id = 7, NumberOfLevel = 6, MinimumPlayedGames = 1000 }
             );
-
-            var adminUser = new UserAccount
-            {
-                Id = adminUserId,
-                FirstName = "Admin",
-                LastName = "Admin",
-                UserName = "admin@gmail.com",
-                NormalizedUserName = "ADMIN@GMAIL.COM",
-                Email = "admin@gmail.com",
-                NormalizedEmail = "ADMIN@GMAIL.COM",
-                EmailConfirmed = false,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                Level = 0,
-                Balance = 0,
-                LockoutEnabled = true
-            };
-
-            var hasher = new PasswordHasher<UserAccount>();
-            adminUser.PasswordHash = hasher.HashPassword(adminUser, "Qwerty12#");
-
-            modelBuilder.Entity<UserAccount>().HasData(adminUser);
-            modelBuilder.Entity<IdentityRole>().HasData(
-                new IdentityRole { Id = adminRoleId, Name = "Administrator", NormalizedName = "ADMINISTRATOR", ConcurrencyStamp = "asd1" });
-
-            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
-                new IdentityUserRole<string> { UserId = adminUserId, RoleId = adminRoleId });
 
             modelBuilder.Entity<Team>().HasData(
                 new Team { TeamId = 1, Name = "Olimpia .NeT", League = "Premier League" },

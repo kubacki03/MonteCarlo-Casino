@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+#if DEBUG
+using Microsoft.AspNetCore.Mvc;
 
 namespace MonteCarlo.NET.Controllers
 {
+    // Throws on purpose so the exception health check can be demoed. Compiled out of Release builds.
     public class TestController : Controller
     {
-
         [HttpGet]
         [Route("/testError")]
-        public void testError()
+        public IActionResult ThrowTestError()
         {
-            var x = 1;
-            var y = 3 / (x - 1);
+            throw new InvalidOperationException("Test exception for the health check demo.");
         }
-
     }
 }
+#endif

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MonteCarlo.NET.Data;
 using MonteCarlo.NET.Models;
 using MonteCarlo.NET.Services;
 
@@ -9,18 +9,22 @@ namespace MonteCarlo.NET.Controllers
 {
     public class PayoutController : Controller
     {
+        private const string ChallengeSessionKey = "payoutChallenge";
 
         private readonly UserManager<UserAccount> _userManager;
-        private readonly ILogger<HomeController> _logger;
-        private readonly CasinoContext _context;
         private readonly SignInManager<UserAccount> _signInManager;
-        public PayoutController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context, SignInManager<UserAccount> signInManager)
+        private readonly IPayoutService _payouts;
+
+        public PayoutController(
+            UserManager<UserAccount> userManager,
+            SignInManager<UserAccount> signInManager,
+            IPayoutService payouts)
         {
-            _logger = logger;
             _userManager = userManager;
-            _context = context;
             _signInManager = signInManager;
+            _payouts = payouts;
         }
+
         [Authorize]
         public async Task<IActionResult> ShowPayout()
         {
@@ -31,116 +35,101 @@ namespace MonteCarlo.NET.Controllers
             }
             if (user != null && await _userManager.IsLockedOutAsync(user))
             {
-              
-                await _signInManager.SignOutAsync(); 
+                await _signInManager.SignOutAsync();
                 TempData["ErrorMessage"] = "Twoje konto zostało zablokowane na 15 minut.";
-                return RedirectToAction("Login"); 
+                return RedirectToAction("Login");
             }
 
             return View("Payout");
         }
 
-
         [HttpGet]
         [Route("api/payout/report")]
-        public async Task<IActionResult> Report(string email)
+        public async Task<IActionResult> Report(string token)
         {
-            var account = _context.UserAccounts.FirstOrDefault(x => x.Email == email);
-
-            if (account != null)
+            var result = await _payouts.ReportUnauthorizedAsync(token);
+            return result.Outcome switch
             {
-                
-                Report report = new Report
-                {
-                    Date = DateTime.Now,
-                    UserAccountId = account.Id,
-                    Notes = "java > c#",
-                    Status = "Przeslano",
-                    Content = "Zgloszono nieautoryzowaną próbę wypłaty z konta",
-                    Title = "Nieautoryzowana wyplata",
-                    UserAccount = account
-                };
-                _context.Reports.Add(report);
-                _context.SaveChanges();
-
-               
-                var lockoutEndDate = DateTime.Now.AddMinutes(15);
-                account.LockoutEnd = new DateTimeOffset(lockoutEndDate);
-
-               
-                _context.UserAccounts.Update(account);
-                await _context.SaveChangesAsync();
-
-               
-                return Ok($"Zgłoszenie zostało wysłane, a konto zostało zablokowane do {lockoutEndDate} .");
-            }
-
-            return NotFound("Nie znaleziono konta o podanym adresie e-mail.");
+                PayoutReportOutcome.Reported => Ok(result.Message),
+                PayoutReportOutcome.AccountNotFound => NotFound(result.Message),
+                _ => BadRequest(result.Message)
+            };
         }
 
-
-
         [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePayout(long amount, string accountNumber)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                ViewData["Saldo"] = user.Balance;
-            }
-            if (user.Balance < amount)
-            {
-                TempData["ErrorMessage"] = "Masz za malo brigmacoinsow";
+            ViewData["Saldo"] = user.Balance;
 
+            var error = _payouts.ValidateRequest(user, amount, accountNumber);
+            if (error != null)
+            {
+                TempData["ErrorMessage"] = error;
                 return View("Payout");
             }
-            Random random = new Random();
-            int code = random.Next(1000, 10000);
-            HttpContext.Session.SetInt32("kod", code);
-            HttpContext.Session.SetInt32("kwota", (int)amount);
-            HttpContext.Session.SetString("numer",accountNumber);
-            EmailService emailService = new EmailService();
-            emailService.SendEmail(user.Email, code, amount);
+
+            var challenge = _payouts.StartChallenge(
+                user,
+                amount,
+                accountNumber,
+                token => Url.Action(nameof(Report), "Payout", new { token }, Request.Scheme)!);
+            SaveChallenge(challenge);
 
             return View("Verification");
-
         }
 
         [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmedPayout(long code)
         {
-            Console.WriteLine("TWoj kod " + code);
-            long amount = (long)HttpContext.Session.GetInt32("kwota");
-            string number = HttpContext.Session.GetString("numer");
-
             var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                ViewData["Saldo"] = user.Balance;
-            }
-            if(code != HttpContext.Session.GetInt32("kod"))
-            {
-
-                TempData["ErrorMessage"] = "Podany zły kod";
-
-                return View("Verification");
-            }
-            if (user.Balance < amount)
-            {
-                TempData["ErrorMessage"] = "Masz za malo brigmacoinsow";
-
-                return View("Payout");
-            }
-            else
-            {
-                Transaction transaction = new Transaction { Date = DateTime.Now, UserAccount = user, Amount = amount, UserAccountId = user.Id, Type="Wyplata" };
-                _context.Add(transaction);
-                user.Balance -= amount;
-                _context.SaveChanges();
-            }
-            HttpContext.Session.Remove("kod");
             ViewData["Saldo"] = user.Balance;
-            return View("Success");
+
+            var challenge = LoadChallenge();
+            if (challenge == null)
+            {
+                return RejectPayout("Kod wygasł, rozpocznij wypłatę od nowa");
+            }
+
+            switch (await _payouts.ConfirmAsync(user, challenge, code))
+            {
+                case PayoutConfirmation.Completed:
+                    HttpContext.Session.Remove(ChallengeSessionKey);
+                    ViewData["Saldo"] = user.Balance;
+                    return View("Success");
+                case PayoutConfirmation.WrongCode:
+                    SaveChallenge(challenge);
+                    TempData["ErrorMessage"] = "Podany zły kod";
+                    return View("Verification");
+                case PayoutConfirmation.TooManyAttempts:
+                    return RejectPayout("Zbyt wiele błędnych prób, rozpocznij wypłatę od nowa");
+                case PayoutConfirmation.InsufficientFunds:
+                    return RejectPayout("Masz za malo brigmacoinsow");
+                default:
+                    return RejectPayout("Kod wygasł, rozpocznij wypłatę od nowa");
+            }
+        }
+
+        private IActionResult RejectPayout(string message)
+        {
+            HttpContext.Session.Remove(ChallengeSessionKey);
+            TempData["ErrorMessage"] = message;
+            return View("Payout");
+        }
+
+        private void SaveChallenge(PayoutChallenge challenge)
+        {
+            HttpContext.Session.SetString(ChallengeSessionKey, JsonSerializer.Serialize(challenge));
+        }
+
+        private PayoutChallenge? LoadChallenge()
+        {
+            var json = HttpContext.Session.GetString(ChallengeSessionKey);
+            return json == null ? null : JsonSerializer.Deserialize<PayoutChallenge>(json);
         }
     }
 }

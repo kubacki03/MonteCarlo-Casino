@@ -1,65 +1,89 @@
-This document provides a brief description of the libraries used in this project.
-## Demo
-https://drive.google.com/file/d/10lQV5FzIoWe3IUnJnW6jPc_q2rL5V7pw/view?usp=drive_link
+# MonteCarlo Casino
 
-## Important
-This is our group project for web development in ASP.NET Core. For this project, I was responsible for the following features:
-1) Chatbot
-2) Live chat with admin
-3) Age verification at registration using image recognition of the user's ID
-4) Scratch card games
-5) Football betting system
-6) Stripe payments integration
-7) Payouts with mandatory confirmation via a code sent to the user's email
-8) User statistics panel
-9) Self-exclusion feature for users
-10) Implementing a health check middleware to catch errors and forward them to the admin panel
+An online casino built with **ASP.NET Core 8 (MVC + Razor Pages)**, Entity Framework Core and SQL Server. It runs on a virtual currency ("BrigmaCoins") and Stripe in **test mode** — it is a learning project, not a real gambling product.
 
-## Ważne
-Jest to nasz projekt grupowy w zakresie tworzenia aplikacji webowych w ASP.NET Core. W tym projekcie byłem odpowiedzialny za następujące funkcje:
-1)Chatbot
-2)Czat na żywo z administratorem
-3)Weryfikacja wieku podczas rejestracji za pomocą rozpoznawania obrazu dokumentu tożsamości użytkownika
-4)Gry typu scratch card
-5)Zakłady piłkarskie
-6)Integracja z płatnościami Stripe
-7)Wypłaty z obowiązkową weryfikacją za pomocą kodu wysłanego na adres e-mail użytkownika
-8)Panel statystyk użytkownika
-9)Funkcja samowykluczenia z platformy przez użytkownika
-10)Implementacja middleware do monitorowania stanu aplikacji, które przechwytuje błędy i przekazuje je do panelu administratora
+> Group university project for web development in ASP.NET Core. The list below marks the parts I built myself.
 
+**Demo video:** https://drive.google.com/file/d/10lQV5FzIoWe3IUnJnW6jPc_q2rL5V7pw/view?usp=drive_link
 
-## Backend Libraries
+<!-- TODO: add screenshots / a GIF of the slots, the admin panel and the chatbot (e.g. docs/screenshots/*.png) -->
 
-1. **Microsoft.AspNetCore.Identity.EntityFrameworkCore 8.0.11**
-   - Integrates ASP.NET Core Identity with Entity Framework Core to manage user authentication and authorization.
+## Features
 
-2. **FluentAssertions 8.0.0**
-   - Provides an expressive syntax for unit testing, improving readability and clarity when writing assertions in tests.
+**Games:** slots, roulette, dice, horse races, two scratch card games, football betting.
 
-3. **Microsoft.AspNetCore.Identity.UI 8.0.11**
-   - Contains Razor Pages for managing identity-related UI components such as login, registration, and password management.
+**Account & responsible gaming:** registration with age verification, daily stake limits, self-exclusion, bans managed by admins, player levels and ranking.
 
-4. **Microsoft.AspNetCore.SignalR 1.1.0**
-   - A library for building real-time web applications, enabling server-to-client communication over WebSockets or other protocols.
+**Payments:** deposits with Stripe Checkout, payouts confirmed with a one-time code sent by e-mail.
 
-5. **Microsoft.EntityFrameworkCore 8.0.11**
-   - An Object-Relational Mapper (ORM) for .NET, allowing developers to interact with databases using .NET objects.
+**Support:** rule-based FAQ chatbot, live chat with an admin (SignalR).
 
-6. **Microsoft.NET.Test.Sdk 17.8.0**
-   - Infrastructure for running unit tests in .NET, including handling test execution and reporting results.
+**Admin panel:** users, bans, limits, games, transactions, reports, live chat and a health dashboard.
 
-7. **Microsoft.VisualStudio.Web.CodeGeneration.Design 8.0.7**
-   - Supports code generation for ASP.NET Core applications, such as generating controllers and views.
+### What I built (my part of the group project)
 
-8. **Moq 4.20.72**
-   - A mocking framework for .NET that enables the creation of mock objects for unit testing.
+1. Chatbot (Jaro-Winkler similarity matching against an FAQ)
+2. Live chat with an admin (SignalR)
+3. Age verification at registration using OCR of the user's ID (Tesseract)
+4. Scratch card games
+5. Football betting system
+6. Stripe payments integration
+7. Payouts with mandatory confirmation via a code sent to the user's e-mail
+8. User statistics panel
+9. Self-exclusion feature
+10. Health check middleware that catches exceptions and forwards them to the admin panel
 
-9. **Stripe.net 47.1.0**
-   - The official .NET library for integrating Stripe payment processing services.
+## Technical notes
 
-10. **Tesseract 5.2.0**
-    - An OCR library for extracting text from images.
+- **Game logic lives on the server.** `GameService` runs every play inside a serializable transaction: it validates the stake, balance and daily limit, applies the result, records the play and updates the player level. Games (`SlotService`, `ScratchCardService`, `FootballBetService`) only decide the outcome. The client never reports a result — the slots endpoint receives only the stake and returns the reels drawn by the server.
+- **House edge:** three matching reels out of 9 symbols happen with probability 1/81, the prize is 70× the stake, so the theoretical RTP is ~86%.
+- **Payout flow:** a random 4-digit code (cryptographic RNG) is e-mailed, expires after 10 minutes and allows 5 attempts. The e-mail also contains a signed, time-limited "this wasn't me" link that reports the payout and locks the account for 15 minutes.
+- **Stripe:** the balance is credited only when the Checkout session is `paid`.
+- **No secrets in the repository:** the admin account, Stripe key and SMTP credentials come from configuration (see below).
+- **Tests:** xUnit, with game services tested against an in-memory SQLite database and a scripted `Random`. Run them with `dotnet test`.
 
-11. **xUnit 2.9.3**
-    - A unit testing framework for .NET.
+## Tech stack
+
+ASP.NET Core 8 · EF Core 8 (SQL Server) · ASP.NET Core Identity · SignalR · Stripe.net · Tesseract OCR · AspNetCore.HealthChecks (+ UI) · xUnit
+
+## Getting started
+
+Requirements: .NET 8 SDK, SQL Server LocalDB (or any SQL Server — change `ConnectionStrings:MonteCarloDB`), the `dotnet-ef` tool.
+
+```bash
+git clone <this repo>
+cd MonteCarlo-Casino/MonteCarlo.NET
+
+# configuration is stored in user secrets, never in the repo
+dotnet user-secrets set "Admin:Email" "admin@example.com"
+dotnet user-secrets set "Admin:Password" "<a strong password>"
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_..."        # Stripe test key, needed for deposits
+dotnet user-secrets set "Email:From" "you@gmail.com"            # optional, payout e-mails
+dotnet user-secrets set "Email:Password" "<gmail app password>" # optional
+
+dotnet ef database update --context CasinoContext
+dotnet run
+```
+
+On startup the app creates the `Administrator` role and the admin account from `Admin:Email` / `Admin:Password`. Without SMTP settings the payout e-mail is not sent (a warning is logged). On other environments use environment variables, e.g. `Stripe__SecretKey`.
+
+The age verification needs the Polish Tesseract model, which is included in `MonteCarlo.NET/tessdata`.
+
+## Project structure
+
+```
+MonteCarlo.NET/
+  Controllers/   MVC controllers (thin - they delegate to services)
+  Services/      game logic (Games/), e-mail, ID image processing
+  Models/        entities and view models
+  Data/          EF Core context, admin seeder
+  HealthCheck/   CPU / exception health checks and exception tracking middleware
+  Areas/Identity Customised Identity pages (registration with age verification)
+TestyMonteCarlo/ xUnit tests
+```
+
+## Known limitations
+
+- Roulette, dice and horse races still compute part of the result in controllers/the browser and should be moved to server-side services like the slots.
+- Monetary values are stored as `double`; `decimal` would be the correct type.
+- The chatbot is a simple FAQ matcher, not a language model.

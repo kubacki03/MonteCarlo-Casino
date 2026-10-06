@@ -1,4 +1,5 @@
-﻿@{
+@using MonteCarlo.NET.Services.Games
+@{
     var numbers = RouletteNumber.GenerateRouletteNumbers();
     var lastNumber = numbers.Last();
     numbers.Remove(lastNumber);
@@ -7,12 +8,13 @@
 <div id="mainflex">
     <div class="bets-list">
         <h3>Current Bets</h3>
+        @Html.AntiForgeryToken()
         <ul id="bets-list">
-            @for (int i = 0; i < RouletteLogic.Bets.Length; i++)
+            @for (int i = 0; i < RouletteService.BetLabels.Length; i++)
             {
                 <li id="bet-@i">
-                    <span>@RouletteLogic.BetLabels[i]</span>
-                    <span class="bet-amount">@RouletteLogic.Bets[i].ToString("F2")</span>
+                    <span>@RouletteService.BetLabels[i]</span>
+                    <span class="bet-amount">0.00</span>
                 </li>
             }
         </ul>
@@ -192,120 +194,87 @@
 
 </div>
 
-<script>
-    function placeBet(position) {
-        const betAmount = document.getElementById("betAmount").value;
+<script> 
+    const betLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(RouletteService.BetLabels));
+    const bets = new Array(betLabels.length).fill(0);
+    let spinning = false;
 
-        if (!betAmount || betAmount <= 0) {
-            alert("Please enter a valid betting amount.");
+    function placeBet(position) {
+        const betAmount = Number(document.getElementById("betAmount").value);
+
+        if (!Number.isInteger(betAmount) || betAmount <= 0) {
+            alert("Please enter a valid whole betting amount.");
             return;
         }
 
-        fetch('/RController/PlaceBet', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                money: parseFloat(betAmount),
-                position: parseInt(position),
-            }),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error placing bet.");
+        bets[position] = betAmount;
+        renderBets();
+    }
+
+    function renderBets() {
+        bets.forEach((bet, index) => {
+            const betElement = document.querySelector(`#bet-${index} .bet-amount`);
+            if (betElement) {
+                betElement.textContent = bet.toFixed(2);
+                betElement.style.color = bet === 0 ? 'gray' : 'black';
             }
-            updateBets();
-        })
-        .catch(error => {
-            console.error("Error placing bet:", error);
-            alert("Error placing bet.");
         });
     }
 
+    async function spinToWin() {
+        if (spinning) return;
 
-    function updateBets() {
-        fetch('/RController/GetBets')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch bets.');
-                }
-                return response.json();
-            })
-            .then(bets => {
-                bets.forEach((bet, index) => {
-                    const betElement = document.querySelector(`#bet-${index} .bet-amount`);
-                    if (betElement) {
-                        betElement.textContent = bet.toFixed(2);
-                        betElement.style.color = bet === 0 ? 'gray' : 'black';
-                    }
-                });
-            })
-            .catch(error => {
-                console.error("Error fetching bets:", error);
-            });
-    }
+        const placed = bets
+            .map((amount, position) => ({ position, amount }))
+            .filter(b => b.amount > 0);
+        if (placed.length === 0) {
+            alert("Place at least one bet.");
+            return;
+        }
 
-    function spinToWin() {
+        spinning = true;
         const ball = document.querySelector('.ball');
         const wheel = document.querySelector('.wheel');
         const resultBar = document.querySelector('.resultbar p');
 
-        fetch('/RController/GetResult', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch result.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const { win: isWinner, bets: allBets, coins: winnings, finalNumber } = data;
-
-            fetch('/RC/SubmitRouletteResult', {
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const response = await fetch('/RController/Spin', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
                 },
-                body: JSON.stringify({ isWinner, allBets, winnings })
-            })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error('Błąd:', error));
+                body: JSON.stringify({ bets: placed })
+            });
+            if (!response.ok) {
+                throw new Error('Spin request failed: ' + response.status);
+            }
+            const data = await response.json();
+            if (!data.succeeded) {
+                alert(data.error);
+                spinning = false;
+                return;
+            }
 
-            resultBar.innerHTML = `Result: <b>${finalNumber}</b><br>Winnings: <b>${winnings.toFixed(0)}</b>`;
-            updateBets();
-        })
-        .catch(error => {
-            console.error("Error fetching result:", error);
+            ball.style.animation = 'spinBall 3s linear infinite';
+            wheel.style.animation = 'spinWheel 3s linear infinite';
+            setTimeout(() => {
+                ball.style.animation = 'none';
+                wheel.style.animation = 'none';
+                resultBar.innerHTML = `Result: <b>${data.finalNumber}</b><br>Winnings: <b>${data.winnings.toFixed(0)}</b>`;
+            }, 3000);
+
+            // reload so the balance in the layout is refreshed
+            setTimeout(() => { window.location.href = "/Home/Roulette"; }, 6000);
+        } catch (error) {
+            console.error(error);
             alert("Error fetching result.");
-        });
-
-        ball.style.animation = 'spinBall 3s linear infinite';
-
-        wheel.style.animation = 'spinWheel 3s linear infinite';
-
-        setTimeout(() => {
-            ball.style.animation = 'none';
-            wheel.style.animation = 'none';
-        }, 5000);
-
-        updateBets();
-
-        setTimeout(() => {
-            console.log("Przekierowanie po 6 sekundach...");
-            window.location.href = "/Home/Roulette";
-        }, 6000);
+            spinning = false;
+        }
     }
 
-    window.onload = function() {
-        updateBets();
-    };
+    window.onload = renderBets;
 </script>
 
 <style>

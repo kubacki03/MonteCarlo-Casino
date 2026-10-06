@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonteCarlo.NET.Data;
 
@@ -11,9 +12,11 @@ using MonteCarlo.NET.Data;
 namespace MonteCarlo.NET.Migrations
 {
     [DbContext(typeof(CasinoContext))]
-    partial class CasinoContextModelSnapshot : ModelSnapshot
+    [Migration("20261005230530_RemoveSeededAdmin")]
+    partial class RemoveSeededAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

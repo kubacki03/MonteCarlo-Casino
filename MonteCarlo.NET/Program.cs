@@ -1,16 +1,18 @@
-using Microsoft.EntityFrameworkCore;
-using MonteCarlo.NET.Data;
-using MonteCarlo.NET.Models;
-using Microsoft.AspNetCore.Identity;
-using Stripe;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MonteCarlo.NET.Data;
 using MonteCarlo.NET.HealthCheck;
+using MonteCarlo.NET.Models;
+using MonteCarlo.NET.Services;
 using MonteCarlo.NET.Services.Games;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("MonteCarloDB");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -22,54 +24,39 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
+
 builder.Services.AddSingleton<ExceptionTracker>();
 builder.Services.AddSingleton(Random.Shared);
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IScratchCardService, ScratchCardService>();
 builder.Services.AddScoped<IFootballBetService, FootballBetService>();
+builder.Services.AddScoped<ISlotService, SlotService>();
+builder.Services.AddScoped<IRouletteService, RouletteService>();
+builder.Services.AddScoped<IDiceService, DiceService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<ILimitService, LimitService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPayoutService, MonteCarlo.NET.Services.PayoutService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
-
-
-
-builder.Services.AddHealthChecks()
-    .AddCheck<CpuHealthCheck>("CPU Load")
-    .AddCheck<ExceptionHealthCheck>("Exception Check")
-.AddSqlServer(connectionString: builder.Configuration.GetConnectionString("MonteCarloDB"));
-
-
-
-
-builder.Services.AddDbContext<CasinoContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MonteCarloDB"))
-);
+builder.Services.AddDbContext<CasinoContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddDefaultIdentity<UserAccount>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<CasinoContext>();
 
 builder.Services.AddSingleton<IStripeClient>(new StripeClient(builder.Configuration["Stripe:SecretKey"]));
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 
 builder.Services.AddHealthChecks()
+    .AddCheck<CpuHealthCheck>("CPU Load")
+    .AddCheck<ExceptionHealthCheck>("Exception Check")
+    .AddCheck("Application", () => HealthCheckResult.Healthy("Aplikacja dziala poprawnie"))
     .AddSqlServer(
-        connectionString: builder.Configuration.GetConnectionString("MonteCarloDB"),
+        connectionString: connectionString!,
         name: "Database",
-        failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-        tags: new[] { "db", "sql" })
-    .AddCheck("Application", () => HealthCheckResult.Healthy("Aplikacja dziala poprawnie"));
-
-builder.Services.AddSingleton<IHealthCheck, CpuHealthCheck>();
-
-
+        failureStatus: HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql" });
 
 builder.Services.AddHealthChecksUI(options =>
 {
@@ -80,55 +67,40 @@ builder.Services.AddHealthChecksUI(options =>
 
 var app = builder.Build();
 
-
-
-
-
-
-app.UseCors("AllowAll");
+try
+{
+    await AdminSeeder.SeedAsync(app.Services, app.Configuration);
+}
+catch (Exception ex)
+{
+    app.Logger.LogWarning(ex, "Admin seeding failed - has the database been created? Run: dotnet ef database update");
+}
 
 app.UseExceptionHandler("/Home/CustomError");
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
-    app.UseExceptionHandler("/Home/CustomError");
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-
-app.UseRouting();
-
-app.UseSession();
 app.UseStaticFiles();
-
+app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-app.UseEndpoints(endpoints =>
+app.MapHub<ChatHub>("/chathub");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
+app.MapHealthChecks("/health", new HealthCheckOptions
 {
-
-    endpoints.MapHub<ChatHub>("/chathub");
-
-
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
-
-
-    endpoints.MapRazorPages();
-
-
-    endpoints.MapHealthChecks("/health", new HealthCheckOptions
-    {
-        Predicate = _ => true,
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
-
-
-    endpoints.MapHealthChecksUI();
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
+app.MapHealthChecksUI();
 
 app.Run();

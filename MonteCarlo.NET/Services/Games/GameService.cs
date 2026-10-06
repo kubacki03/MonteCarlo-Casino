@@ -27,6 +27,22 @@ namespace MonteCarlo.NET.Services.Games
             return await GetStakeRejectionAsync(user, game, game.MinStake);
         }
 
+        public async Task<string?> GetStakeRejectionAsync(UserAccount user, string gameName, double stake)
+        {
+            var game = await FindGameAsync(gameName);
+            if (game == null)
+            {
+                return GameUnavailableMessage;
+            }
+
+            return await GetStakeRejectionAsync(user, game, stake);
+        }
+
+        public async Task<double?> GetMinStakeAsync(string gameName)
+        {
+            return (await FindGameAsync(gameName))?.MinStake;
+        }
+
         public Task<PlayResult<TOutcome>> PlayAsync<TOutcome>(
             UserAccount user,
             string gameName,
@@ -97,7 +113,7 @@ namespace MonteCarlo.NET.Services.Games
 
         private async Task<string?> GetStakeRejectionAsync(UserAccount user, Game game, double stake)
         {
-            if (stake <= 0 || stake < game.MinStake)
+            if (!double.IsFinite(stake) || stake <= 0 || stake < game.MinStake)
             {
                 return $"Minimalna stawka to {game.MinStake} zł";
             }

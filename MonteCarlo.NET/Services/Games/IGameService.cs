@@ -6,6 +6,10 @@ namespace MonteCarlo.NET.Services.Games
     {
         Task<string?> GetPlayRejectionAsync(UserAccount user, string gameName);
 
+        Task<string?> GetStakeRejectionAsync(UserAccount user, string gameName, double stake);
+
+        Task<double?> GetMinStakeAsync(string gameName);
+
         Task<PlayResult<TOutcome>> PlayAsync<TOutcome>(
             UserAccount user,
             string gameName,

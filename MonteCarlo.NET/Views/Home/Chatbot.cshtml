@@ -110,7 +110,7 @@
     <script>
        
         async function getBotResponse(userMessage) {
-           const url = `https://localhost:7168/api/bot/getResponse?message=${encodeURIComponent(userMessage)}`;
+           const url = `/api/bot/getResponse?message=${encodeURIComponent(userMessage)}`;
 
             const response = await fetch(url);
             const data = await response.text();

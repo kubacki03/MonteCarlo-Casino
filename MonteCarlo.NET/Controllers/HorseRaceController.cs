@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MonteCarlo.NET.Data;
 using MonteCarlo.NET.Models;
@@ -6,6 +7,7 @@ using MonteCarlo.NET.Models;
 
 namespace MonteCarlo.NET.Controllers
 {
+    [Authorize]
     public class HorseRaceController : Controller
     {
         private readonly UserManager<UserAccount> _userManager;

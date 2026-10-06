@@ -1,91 +1,49 @@
-﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MonteCarlo.NET.Models;
+using MonteCarlo.NET.Services.Games;
 
 namespace MonteCarlo.NET.Controllers
 {
+    [Authorize]
     public class RouletteController : Controller
     {
-        private readonly ILogger<RouletteController> _logger;
+        private readonly UserManager<UserAccount> _userManager;
+        private readonly IRouletteService _roulette;
 
-        public RouletteController(ILogger<RouletteController> logger)
+        public RouletteController(UserManager<UserAccount> userManager, IRouletteService roulette)
         {
-            _logger = logger;
+            _userManager = userManager;
+            _roulette = roulette;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
+        
         [HttpPost]
-        [Route("RController/PlaceBet")]
-        public IActionResult PlaceBet([FromBody] BetRequest bet)
+        [ValidateAntiForgeryToken]
+        [Route("RController/Spin")]
+        public async Task<IActionResult> Spin([FromBody] RouletteSpinRequest request)
         {
-            try
+            var user = await _userManager.GetUserAsync(User);
+            var bets = request.Bets.Select(b => new RouletteBet(b.Position, b.Amount)).ToList();
+
+            var result = await _roulette.SpinAsync(user, bets);
+            if (!result.Succeeded)
             {
-                if (bet.Money <= 0 || bet.Position < 0)
-                {
-                    return BadRequest();
-                }
-
-                RouletteLogic.PlaceBet(bet.Money, bet.Position);
-
-                return StatusCode(204);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error placing bet.");
-                return StatusCode(500);
-            }
-        }
-
-
-
-        [HttpGet]
-        [Route("RController/GetBets")]
-        public IActionResult GetBets()
-        {
-            return Json(RouletteLogic.Bets);
-        }
-
-        [HttpPost]
-        [Route("RController/GetResult")]
-        public IActionResult GetResult()
-        {
-            float winnings = RouletteLogic.SpinAndCalculateWinnings();
-            float allBets = RouletteLogic.CollectTotalBets();
-            
-            bool winner = false;
-            if (winnings > 0)
-            {
-                winner = true;
+                return Json(new { succeeded = false, error = result.ErrorMessage });
             }
 
             return Json(new
             {
-                win = winner,
-                bets = allBets,
-                coins = winnings,
-                finalNumber = RouletteLogic.LastResult
+                succeeded = true,
+                finalNumber = result.Outcome!.Number,
+                stake = result.Outcome.Stake,
+                winnings = result.Outcome.Winnings
             });
         }
-    }
 
-    public class BetRequest
-    {
-        public float Money { get; set; }
-        public int Position { get; set; }
+        public sealed record RouletteSpinRequest(List<BetDto> Bets);
+
+        public sealed record BetDto(int Position, int Amount);
     }
 }

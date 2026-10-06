@@ -1,89 +1,66 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MonteCarlo.NET.Data;
 using MonteCarlo.NET.Models;
+using MonteCarlo.NET.Services;
 
 namespace MonteCarlo.NET.Controllers
 {
     public class LimitsController : Controller
     {
         private readonly UserManager<UserAccount> _userManager;
-        private readonly ILogger<HomeController> _logger;
-        private readonly CasinoContext _context;
         private readonly SignInManager<UserAccount> _signInManager;
-        public LimitsController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context, SignInManager<UserAccount> signInManager)
+        private readonly ILimitService _limits;
+
+        public LimitsController(UserManager<UserAccount> userManager, SignInManager<UserAccount> signInManager, ILimitService limits)
         {
-            _logger = logger;
             _userManager = userManager;
-            _context = context;
             _signInManager = signInManager;
+            _limits = limits;
         }
+
         [Authorize]
         public async Task<IActionResult> Limits()
         {
             var user = await _userManager.GetUserAsync(User);
-            var currentLimit = _context.Limits
-            .Where(l => l.UserAccountId == user.Id)
-            .AsEnumerable()
-            .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
-            .FirstOrDefault();
-
-            if (user != null)
-            {
-                ViewData["Level"] = user.Level;
-                ViewData["Saldo"] = user.Balance;
-            }
-            return View(currentLimit);
+            SetUserViewData(user);
+            return View(await _limits.GetCurrentLimitAsync(user));
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> SetLimit(long limit)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                ViewData["Saldo"] = user.Balance;
-                ViewData["Level"] = user.Level;
-            }
-            if (user != null && await _userManager.IsLockedOutAsync(user))
-            {
+            SetUserViewData(user);
 
+            if (await _userManager.IsLockedOutAsync(user))
+            {
                 await _signInManager.SignOutAsync();
                 TempData["ErrorMessage"] = "Twoje konto zostało zablokowane na 15 minut.";
                 return RedirectToAction("Login");
             }
 
-            var currentLimit = _context.Limits
-         .Where(l => l.UserAccountId == user.Id)
-         .AsEnumerable()
-         .OrderBy(l => Math.Abs((l.Date - DateTime.Now).Ticks))
-         .FirstOrDefault();
-
-
-            if (currentLimit != null && DateTime.Now < currentLimit.Date.AddDays(1))
+            var result = await _limits.SetLimitAsync(user, limit);
+            if (result.Succeeded)
             {
-                ViewData["Error"] = "Nie mineły 24h od poprzedniego limitu";
-                return View("Limits", currentLimit);
+                ViewData["Confirm"] = "Dodano nowy limit";
             }
-            if (user != null)
+            else
             {
-                ViewData["Saldo"] = user.Balance;
-                ViewData["Level"] = user.Level;
+                ViewData["Error"] = result.ErrorMessage;
             }
 
-            Limit newLimit = new Limit { Date = DateTime.Now, Amount = limit, UserAccountId = user.Id, UserAccount = user };
-            _context.Limits.Add(newLimit);
-            _context.SaveChanges();
-            currentLimit = newLimit;
-            ViewData["Confirm"] = "Dodano nowy limit";
-
-            return View("Limits", currentLimit);
+            return View("Limits", result.Limit);
         }
 
-
-
-
+        private void SetUserViewData(UserAccount? user)
+        {
+            if (user != null)
+            {
+                ViewData["Level"] = user.Level;
+                ViewData["Saldo"] = user.Balance;
+            }
+        }
     }
 }

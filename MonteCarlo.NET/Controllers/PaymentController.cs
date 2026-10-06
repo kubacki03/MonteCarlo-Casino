@@ -1,112 +1,66 @@
-﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MonteCarlo.NET.Controllers;
-using MonteCarlo.NET.Data;
 using MonteCarlo.NET.Models;
-using Stripe.Checkout;
+using MonteCarlo.NET.Services;
 
-public class PaymentController : Controller
+namespace MonteCarlo.NET.Controllers
 {
-
-    private readonly UserManager<UserAccount> _userManager;
-    private readonly ILogger<HomeController> _logger;
-    private readonly CasinoContext _context;
-
-    string apiKey = Environment.GetEnvironmentVariable("STRIPE_KEY");
-
-    public PaymentController(ILogger<HomeController> logger, UserManager<UserAccount> userManager, CasinoContext context)
+    [Authorize]
+    public class PaymentController : Controller
     {
-        _logger = logger;
-        _userManager = userManager;
-        _context = context;
-    }
+        private readonly UserManager<UserAccount> _userManager;
+        private readonly IPaymentService _payments;
 
-
-    [HttpPost]
-    public async Task<IActionResult> CreateCheckoutSession(long amount)
-    {
-
-        var client = new Stripe.StripeClient(apiKey);
-        var user = await _userManager.GetUserAsync(User);
-        ViewData["Saldo"] = user.Balance;
-        var lineItems = new List<SessionLineItemOptions>
-    {
-        new SessionLineItemOptions
+        public PaymentController(UserManager<UserAccount> userManager, IPaymentService payments)
         {
-            PriceData = new SessionLineItemPriceDataOptions
+            _userManager = userManager;
+            _payments = payments;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCheckoutSession(long amount)
+        {
+            var session = await _payments.CreateCheckoutSessionAsync(
+                amount,
+                Url.Action("Success", "Payment", null, Request.Scheme)!,
+                Url.Action("Cancel", "Payment", null, Request.Scheme)!);
+            if (session == null)
             {
-                UnitAmount = (amount)*100,
-                Currency = "pln",
-                ProductData = new SessionLineItemPriceDataProductDataOptions
-                {
-                    Name = "Doładowanie konta o " + amount+" brigmacoinsów"
-                }
-            },
-            Quantity = 1
+                return RedirectToAction("Cancel");
+            }
+
+            TempData["SessionId"] = session.Id;
+            return Redirect(session.Url);
         }
-    };
 
-        var options = new SessionCreateOptions
+        [HttpGet]
+        public async Task<IActionResult> Success()
         {
-            PaymentMethodTypes = new List<string> { "card", "klarna", "blik" },
-            LineItems = lineItems,
-            Mode = "payment",
-            SuccessUrl = Url.Action("Success", "Payment", null, Request.Scheme),
-            CancelUrl = Url.Action("Cancel", "Payment", null, Request.Scheme)
-        };
+            var sessionId = TempData["SessionId"]?.ToString();
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return RedirectToAction("Cancel");
+            }
 
-        var service = new SessionService(client);
-        Session session = service.Create(options);
-        var id = session.Id;
+            var user = await _userManager.GetUserAsync(User);
+            if (await _payments.CompletePaymentAsync(user, sessionId) == null)
+            {
+                return RedirectToAction("Cancel");
+            }
 
-        TempData["SessionId"] = id;
-
-
-        return Redirect(session.Url);
-    }
-
-
-
-
-
-    [HttpGet]
-    public async Task<IActionResult> Success()
-    {
-
-        var sessionId = TempData["SessionId"]?.ToString();
-        if (string.IsNullOrEmpty(sessionId))
-        {
-            return RedirectToAction("Cancel");
+            ViewData["Saldo"] = user.Balance;
+            ViewData["Level"] = user.Level;
+            return View();
         }
-        var client = new Stripe.StripeClient(apiKey);
 
-        var service = new SessionService(client);
-        var session = service.Get(sessionId);
-
-        double charge = (double)session.AmountTotal / 100;
-
-        var user = await _userManager.GetUserAsync(User);
-
-        user.Balance += charge;
-
-
-        Transaction transaction = new Transaction { Date = DateTime.Now, Amount = charge, Type = "Wplata", UserAccount = user, UserAccountId = user.Id };
-        _context.Add(transaction);
-        _context.SaveChanges();
-        ViewData["Saldo"] = user.Balance;
-        ViewData["Level"] = user.Level;
-        return View();
-    }
-
-
-
-    [HttpGet]
-    public async Task<IActionResult> Cancel()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        ViewData["Saldo"] = user.Balance;
-        ViewData["Level"] = user.Level;
-        return View();
+        [HttpGet]
+        public async Task<IActionResult> Cancel()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            ViewData["Saldo"] = user.Balance;
+            ViewData["Level"] = user.Level;
+            return View();
+        }
     }
 }
