@@ -7,7 +7,7 @@
 
 <div id="mainflex">
     <div class="bets-list">
-        <h3>Current Bets</h3>
+        <h3>Aktualne zakłady</h3>
         @Html.AntiForgeryToken()
         <ul id="bets-list">
             @for (int i = 0; i < RouletteService.BetLabels.Length; i++)
@@ -22,8 +22,8 @@
 
     <div class="roulette-table">
         <div>
-            <label for="betAmount">Bet Amount:</label>
-            <input type="number" id="betAmount" placeholder="Enter amount" />
+            <label for="betAmount">Kwota zakładu:</label>
+            <input type="number" id="betAmount" placeholder="Wpisz kwotę" />
         </div>
 
         <div class="grid-container">
@@ -43,9 +43,9 @@
                 }
             </div>
             <div class="side-buttons">
-                <button class="betbut" onclick="placeBet(39)">Row 1</button>
-                <button class="betbut" onclick="placeBet(40)">Row 2</button>
-                <button class="betbut" onclick="placeBet(41)">Row 3</button>
+                <button class="betbut" onclick="placeBet(39)">Rząd 1</button>
+                <button class="betbut" onclick="placeBet(40)">Rząd 2</button>
+                <button class="betbut" onclick="placeBet(41)">Rząd 3</button>
             </div>
         </div>
         <div class="bets">
@@ -58,7 +58,7 @@
             <button id="b7" class="betbut" onclick="placeBet(42)">1 do 12</button>
             <button id="b8" class="betbut" onclick="placeBet(43)">13 do 24</button>
             <button id="b9" class="betbut" onclick="placeBet(44)">25 do 36</button>
-            <button class="confb-button" onclick="spinToWin()">SPIN!</button>
+            <button class="confb-button" onclick="spinToWin()">KRĘĆ!</button>
         </div>
         <div class="resultbar">
             <p></p>
@@ -203,7 +203,7 @@
         const betAmount = Number(document.getElementById("betAmount").value);
 
         if (!Number.isInteger(betAmount) || betAmount <= 0) {
-            alert("Please enter a valid whole betting amount.");
+            alert("Wpisz poprawną, całkowitą kwotę zakładu.");
             return;
         }
 
@@ -228,7 +228,7 @@
             .map((amount, position) => ({ position, amount }))
             .filter(b => b.amount > 0);
         if (placed.length === 0) {
-            alert("Place at least one bet.");
+            alert("Postaw co najmniej jeden zakład.");
             return;
         }
 
@@ -262,14 +262,14 @@
             setTimeout(() => {
                 ball.style.animation = 'none';
                 wheel.style.animation = 'none';
-                resultBar.innerHTML = `Result: <b>${data.finalNumber}</b><br>Winnings: <b>${data.winnings.toFixed(0)}</b>`;
+                resultBar.innerHTML = `Wynik: <b>${data.finalNumber}</b><br>Wygrana: <b>${data.winnings.toFixed(0)}</b>`;
             }, 3000);
 
             // reload so the balance in the layout is refreshed
             setTimeout(() => { window.location.href = "/Home/Roulette"; }, 6000);
         } catch (error) {
             console.error(error);
-            alert("Error fetching result.");
+            alert("Błąd podczas pobierania wyniku.");
             spinning = false;
         }
     }

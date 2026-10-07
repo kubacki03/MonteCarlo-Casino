@@ -10,21 +10,21 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark casino-nav mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MonteCarlo.NET</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="Przełącz nawigację">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Strona główna</a>
                         </li>
                         @if (!User.IsInRole("Administrator")){
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="BotSupport">Support</a>
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="BotSupport">Wsparcie</a>
                         </li>
                         @if (User.Identity.IsAuthenticated) 
                         {
@@ -40,34 +40,34 @@
                         {
                             
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Users">Users</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Users">Użytkownicy</a>
                             </li>
 
                          
                             
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Ban">Ban</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Ban">Bany</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Limits">Limits</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Limits">Limity</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Games">Games</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Games">Gry</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Transactions">Transactions</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Transactions">Transakcje</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="GameAccounts">Game accounts</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="GameAccounts">Historia gier</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Reports">Reports</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="Reports">Zgłoszenia</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="LiveChatAdmin">LiveChat</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="LiveChatAdmin">Czat na żywo</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="HealthCheck">HealthCheck</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Administrator" asp-action="HealthCheck">Stan serwera</a>
                             </li>
                         }
                     </ul>
@@ -122,9 +122,9 @@
         });
     </script>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer">
         <div class="container">
-            &copy; 2024 - MonteCarlo.NET - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2024 MonteCarlo.NET &bull; <a asp-area="" asp-controller="Home" asp-action="Privacy">Regulamin</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

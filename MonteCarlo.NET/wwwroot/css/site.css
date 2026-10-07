@@ -19,11 +19,56 @@ html {
 
 body {
   margin-bottom: 60px;
-  background-image: url(../images/tlo_kasyno2.jpg);
+  background-image:
+    linear-gradient(rgba(5, 8, 20, 0.78), rgba(5, 8, 20, 0.88)),
+    url(../images/tlo_kasyno2.jpg);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   color: white;
+}
+
+/* Navbar */
+.casino-nav {
+  background: linear-gradient(180deg, rgba(8, 10, 20, 0.97), rgba(20, 22, 38, 0.95));
+  border-bottom: 2px solid #d4af37;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.casino-nav .navbar-brand {
+  color: #d4af37;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.casino-nav .navbar-brand:hover {
+  color: #f5d76e;
+}
+
+.casino-nav .nav-link {
+  position: relative;
+  margin: 0 0.15rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  color: #e8e9f0 !important;
+  transition: background 0.2s, color 0.2s;
+}
+
+.casino-nav .nav-link:hover,
+.casino-nav .nav-link:focus {
+  background: rgba(212, 175, 55, 0.15);
+  color: #f5d76e !important;
+}
+
+.casino-nav .navbar-toggler {
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.casino-nav button.nav-link {
+  text-decoration: none;
 }
 
 .btnCustom{

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosci Game</title>
+    <title>Kości</title>
     <style>
         body {
             margin: 0px;
@@ -144,14 +144,14 @@
                     <div><input type="checkbox" id="lock4" onchange="toggleLock(4)"></div>
                 </div>
                 <div class="row">
-                    <button class="roll-button" id="rollButton" onclick="handleRoll()" disabled>Roll</button>
+                    <button class="roll-button" id="rollButton" onclick="handleRoll()" disabled>Rzuć</button>
                 </div>
             </div>
 
             <div class="flexright">
-                <label for="betAmount">You must reach 130 points to win (triple your bet).<br />Bet Amount:</label>
-                <input type="number" id="betAmount" placeholder="Enter amount" />
-                <button class="roll-button" id="startButton" onclick="startGame()">Finalize Bet</button>
+                <label for="betAmount">Aby wygrać, musisz zdobyć 130 punktów (potrojenie stawki).<br />Kwota zakładu:</label>
+                <input type="number" id="betAmount" placeholder="Wpisz kwotę" />
+                <button class="roll-button" id="startButton" onclick="startGame()">Zatwierdź zakład</button>
             </div>
             @if (TempData["ErrorMessage"] != null)
             {
@@ -205,10 +205,10 @@
 
                 const diceImg = document.getElementById(`diceImg${i}`);
                 diceImg.src = `/images/dice${diceValue}.jpg`;
-                diceImg.alt = `Dice value: ${diceValue}`;
+                diceImg.alt = `Wartość kości: ${diceValue}`;
 
                 document.getElementById(`lock${i}`).checked = locks[i];
-                document.getElementById(`counter`).textContent = "Rolls left: " + (3 - rollNum);
+                document.getElementById(`counter`).textContent = "Pozostało rzutów: " + (3 - rollNum);
             }
         }
 

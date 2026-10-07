@@ -44,4 +44,19 @@ button.accept-policy {
   width: 100%;
   white-space: nowrap;
   line-height: 60px;
+  text-align: center;
+  background: rgba(8, 10, 20, 0.92);
+  border-top: 1px solid rgba(212, 175, 55, 0.5);
+  color: #c9ccd6 !important;
+  letter-spacing: 0.03em;
+}
+
+.footer a {
+  color: #d4af37;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer a:hover {
+  color: #f5d76e;
 }
